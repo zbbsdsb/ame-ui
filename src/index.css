@@ -12,6 +12,17 @@
   --color-ame-panel-bg: #020202;
   
   --radius-none: 0px;
+
+  @keyframes scan {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(1000%); }
+  }
+}
+
+@layer utilities {
+  .ame-scan-line {
+    animation: scan 3s linear infinite;
+  }
 }
 
 @layer base {

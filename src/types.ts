@@ -1,21 +1,23 @@
+export type FacetType = 'Visual' | 'Physics' | 'Semantic' | 'Collision' | 'Sensor' | 'Provenance';
+
+export interface Facet {
+  type: FacetType;
+  schema: string;
+  data: Record<string, any>;
+  status: 'SYNCHRONIZED' | 'DIRTY' | 'STALE' | 'ERROR';
+}
+
 export interface SceneNode {
-  id: string;
+  id: string; // AEID
   name: string;
-  type: 'root' | 'camera' | 'light' | 'mesh' | 'group';
   parentId: string | null;
-  properties: {
-    visible: boolean;
-    position: [number, number, number];
-    rotation: [number, number, number];
-    scale: [number, number, number];
-    params?: Record<string, any>;
-  };
+  facets: Facet[];
 }
 
 export interface LogEntry {
   id: string;
   timestamp: string;
-  source: 'SYSTEM' | 'VULKAN' | '3DGS' | 'RENDER' | 'CORE';
+  source: 'SYSTEM' | 'VULKAN' | '3DGS' | 'RENDER' | 'CORE' | 'METACLASS' | 'USD';
   level: 'INFO' | 'OK' | 'WNG' | 'ERR';
   message: string;
 }
@@ -25,5 +27,6 @@ export interface EngineStats {
   gpuUsage: number;
   memory: string;
   version: string;
-  status: 'READY' | 'LOADING' | 'ERROR';
+  status: 'READY' | 'LOADING' | 'ERROR' | 'PATCHING';
+  activeAdapter: 'UNREAL' | 'UNITY' | 'SOLVER' | 'NONE';
 }

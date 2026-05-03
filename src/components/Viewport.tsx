@@ -11,11 +11,20 @@ import {
 import { motion } from 'motion/react';
 
 export const Viewport = () => {
-  const { nodes, selectedNodeId } = useEngineStore();
+  const { nodes, selectedNodeId, routing } = useEngineStore();
   const selectedNode = nodes.find(n => n.id === selectedNodeId);
+  const visualFacet = selectedNode?.facets.find(f => f.type === 'Visual');
+  const position = visualFacet?.data.position || [0, 0, 0];
 
   return (
     <div className="relative h-full bg-[#020202] overflow-hidden group">
+      {/* Scan Line Overlay */}
+      {routing.active && (
+        <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+          <div className="w-full h-1 bg-ame-accent/20 blur-sm ame-scan-line" />
+        </div>
+      )}
+
       {/* Grid Overlay */}
       <div className="absolute inset-0 opacity-10 pointer-events-none" 
         style={{ 
@@ -45,9 +54,18 @@ export const Viewport = () => {
       {/* Top Left HUD */}
       <div className="absolute top-6 left-6 flex flex-col gap-1 z-20">
         <div className="bg-black/90 border border-ame-border px-2 py-1 flex items-center gap-2">
-          <div className="w-1 h-1 bg-ame-accent animate-pulse" />
+          <div className={`w-1 h-1 ${routing.active ? 'bg-ame-accent animate-ping' : 'bg-ame-accent'}`} />
           <span className="font-mono text-[10px] uppercase text-white tracking-widest leading-none">Perspective</span>
         </div>
+        {routing.active && (
+          <motion.div 
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-ame-accent px-2 py-0.5 font-mono text-[8px] font-bold text-black uppercase"
+          >
+            Routing: {routing.lastModel}
+          </motion.div>
+        )}
         <div className="bg-black/30 border border-ame-border/50 px-2 py-1 font-mono text-[9px] uppercase text-slate-500 leading-none">
           FOV: 90.0°
         </div>
@@ -67,15 +85,15 @@ export const Viewport = () => {
             <div className="flex gap-4">
               <div className="flex flex-col gap-0.5">
                 <span className="text-[9px] text-slate-600 font-bold uppercase">X_COORD</span>
-                <span className="font-mono text-[11px] text-white tabular-nums">{selectedNode.properties.position[0].toFixed(3)}</span>
+                <span className="font-mono text-[11px] text-white tabular-nums">{position[0].toFixed(3)}</span>
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-[9px] text-slate-600 font-bold uppercase">Y_COORD</span>
-                <span className="font-mono text-[11px] text-white tabular-nums">{selectedNode.properties.position[1].toFixed(3)}</span>
+                <span className="font-mono text-[11px] text-white tabular-nums">{position[1].toFixed(3)}</span>
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-[9px] text-slate-600 font-bold uppercase">Z_COORD</span>
-                <span className="font-mono text-[11px] text-white tabular-nums">{selectedNode.properties.position[2].toFixed(3)}</span>
+                <span className="font-mono text-[11px] text-white tabular-nums">{position[2].toFixed(3)}</span>
               </div>
             </div>
           </div>

@@ -15,49 +15,84 @@ interface EngineState {
   
   // Engine
   stats: EngineStats;
+  routing: {
+    active: boolean;
+    lastModel: string;
+    targetEntity: string | null;
+  };
   updateStats: (updates: Partial<EngineStats>) => void;
+  triggerInference: (model: string, entityId: string) => void;
 }
 
 const INITIAL_NODES: SceneNode[] = [
   {
-    id: 'root',
+    id: 'aeid.root',
     name: 'root_scene',
-    type: 'root',
     parentId: null,
-    properties: { visible: true, position: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1] }
+    facets: [
+      { 
+        type: 'Provenance', 
+        schema: 'core.prov', 
+        status: 'SYNCHRONIZED', 
+        data: { author: 'SYSTEM', created: '14:20:11' } 
+      }
+    ]
   },
   {
-    id: 'cam_01',
-    name: 'main_camera',
-    type: 'camera',
-    parentId: 'root',
-    properties: { visible: true, position: [0, 1.42, -5], rotation: [0, 0, 0], scale: [1, 1, 1] }
-  },
-  {
-    id: 'light_01',
-    name: 'global_light',
-    type: 'light',
-    parentId: 'root',
-    properties: { visible: true, position: [10, 10, 10], rotation: [0, 0, 0], scale: [1, 1, 1] }
-  },
-  {
-    id: 'mesh_01',
+    id: 'aeid.3dgs.01',
     name: '3dgs_mesh_data_01',
-    type: 'mesh',
-    parentId: 'root',
-    properties: { 
-      visible: true, 
-      position: [0, 1.42, -0.12], 
-      rotation: [0, 90, 0], 
-      scale: [1, 1, 1],
-      params: { pointScale: 1.05, shDegree: 3, opacityThreshold: 0.05 }
-    }
+    parentId: 'aeid.root',
+    facets: [
+      { 
+        type: 'Visual', 
+        schema: 'mesh.3dgs', 
+        status: 'SYNCHRONIZED', 
+        data: { 
+          position: [0, 1.42, -0.12], 
+          rotation: [0, 90, 0], 
+          scale: [1, 1, 1],
+          points: 3219482,
+          pointScale: 1.050 
+        } 
+      },
+      { 
+        type: 'Physics', 
+        schema: 'phys.collider', 
+        status: 'STALE', 
+        data: { mass: 0, gravity: false } 
+      },
+      { 
+        type: 'Semantic', 
+        schema: 'os.metaclass', 
+        status: 'DIRTY', 
+        data: { class: 'Environment', tags: ['Indoor', 'Scan'] } 
+      }
+    ]
+  },
+  {
+    id: 'aeid.sensor.01',
+    name: 'depth_scanner_01',
+    parentId: 'aeid.root',
+    facets: [
+      { 
+        type: 'Visual', 
+        schema: 'mesh.proxy', 
+        status: 'SYNCHRONIZED', 
+        data: { position: [0, 2, 0], rotation: [0, 0, 0], scale: [0.1, 0.1, 0.1] } 
+      },
+      { 
+        type: 'Sensor', 
+        schema: 'mcap.lidar', 
+        status: 'SYNCHRONIZED', 
+        data: { topic: '/ros2/lidar', rate: 10 } 
+      }
+    ]
   }
 ];
 
 export const useEngineStore = create<EngineState>((set) => ({
   nodes: INITIAL_NODES,
-  selectedNodeId: 'mesh_01',
+  selectedNodeId: 'aeid.3dgs.01',
   selectNode: (id) => set({ selectedNodeId: id }),
   updateNode: (id, updates) => set((state) => ({
     nodes: state.nodes.map(node => node.id === id ? { ...node, ...updates } : node)
@@ -65,8 +100,8 @@ export const useEngineStore = create<EngineState>((set) => ({
   
   logs: [
     { id: '1', timestamp: '14:20:11', source: 'SYSTEM', level: 'INFO', message: 'AME Engine core successfully initialized.' },
-    { id: '2', timestamp: '14:20:12', source: 'VULKAN', level: 'INFO', message: 'Found physical device: NVIDIA GeForce RTX 4090 (24564 MB)' },
-    { id: '3', timestamp: '14:20:13', source: 'RENDER', level: 'INFO', message: 'Allocating 3.2M gaussians to GPU buffers...' },
+    { id: '2', timestamp: '14:20:12', source: 'METACLASS', level: 'OK', message: 'Axiomatic Specification v1.0 (Draft) loaded.' },
+    { id: '3', timestamp: '14:20:13', source: 'USD', level: 'INFO', message: 'Stage created: World IR / PointCloud2 active.' },
   ],
   addLog: (log) => set((state) => ({
     logs: [...state.logs, { 
@@ -82,9 +117,21 @@ export const useEngineStore = create<EngineState>((set) => ({
     gpuUsage: 42,
     memory: '2.4GB',
     version: 'v0.8.2-alpha',
-    status: 'READY'
+    status: 'READY',
+    activeAdapter: 'UNREAL'
+  },
+  routing: {
+    active: false,
+    lastModel: 'GPT-4o',
+    targetEntity: null
   },
   updateStats: (updates) => set((state) => ({
     stats: { ...state.stats, ...updates }
-  }))
+  })),
+  triggerInference: (model, entityId) => {
+    set({ routing: { active: true, lastModel: model, targetEntity: entityId }});
+    setTimeout(() => {
+      set({ routing: { active: false, lastModel: model, targetEntity: entityId }});
+    }, 2000);
+  }
 }));

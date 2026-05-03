@@ -15,7 +15,10 @@ export const TopBar = () => {
         <nav className="flex gap-4">
           <span className="text-[11px] text-slate-300 hover:text-white cursor-default">PROJECT_X_SCAN_01</span>
           <span className="text-[11px] text-slate-500">/</span>
-          <span className="text-[11px] text-slate-300">SCENE_MAIN</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-slate-300">ADAPTER:</span>
+            <span className="text-[11px] text-ame-accent font-bold tracking-widest">{stats.activeAdapter}</span>
+          </div>
         </nav>
       </div>
       
