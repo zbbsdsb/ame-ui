@@ -11,13 +11,31 @@ import {
 import { motion } from 'motion/react';
 
 export const Viewport = () => {
-  const { nodes, selectedNodeId, routing } = useEngineStore();
+  const { nodes, selectedNodeId, routing, stats } = useEngineStore();
   const selectedNode = nodes.find(n => n.id === selectedNodeId);
   const visualFacet = selectedNode?.facets.find(f => f.type === 'Visual');
   const position = visualFacet?.data.position || [0, 0, 0];
 
   return (
     <div className="relative h-full bg-[#020202] overflow-hidden group">
+      {/* Patching Overlay */}
+      {stats.status === 'PATCHING' && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 bg-black/60 z-50 flex flex-col items-center justify-center backdrop-blur-sm"
+        >
+          <div className="w-12 h-12 border-2 border-ame-accent border-t-transparent animate-spin mb-4" />
+          <div className="font-mono text-xs text-ame-accent tracking-widest animate-pulse">
+            PATCH SYNCING WORLD IR TO {stats.activeAdapter}...
+          </div>
+          <div className="mt-2 font-mono text-[8px] text-slate-500 uppercase">
+            Handshaking with Adapter / Sending Delta Patch v0.1.0
+          </div>
+        </motion.div>
+      )}
+
       {/* Scan Line Overlay */}
       {routing.active && (
         <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">

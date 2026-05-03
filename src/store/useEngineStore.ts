@@ -21,6 +21,7 @@ interface EngineState {
     targetEntity: string | null;
   };
   updateStats: (updates: Partial<EngineStats>) => void;
+  switchAdapter: (adapter: 'UNREAL' | 'UNITY') => void;
   triggerInference: (model: string, entityId: string) => void;
 }
 
@@ -128,6 +129,32 @@ export const useEngineStore = create<EngineState>((set) => ({
   updateStats: (updates) => set((state) => ({
     stats: { ...state.stats, ...updates }
   })),
+  switchAdapter: (adapter) => {
+    const { stats, addLog } = useEngineStore.getState();
+    if (stats.activeAdapter === adapter) return;
+
+    set((state) => ({ 
+      stats: { ...state.stats, status: 'PATCHING', activeAdapter: adapter } 
+    }));
+
+    addLog({
+      source: 'SYSTEM',
+      level: 'WNG',
+      message: `INITIATING RUNTIME HANDSHAKE: Target ${adapter} Engine...`
+    });
+
+    // Simulate Patch Syncing
+    setTimeout(() => {
+      set((state) => ({ 
+        stats: { ...state.stats, status: 'READY' } 
+      }));
+      addLog({
+        source: 'CORE',
+        level: 'OK',
+        message: `PATCH SYNC COMPLETED: World IR projected to ${adapter} Runtime.`
+      });
+    }, 1500);
+  },
   triggerInference: (model, entityId) => {
     set({ routing: { active: true, lastModel: model, targetEntity: entityId }});
     setTimeout(() => {

@@ -13,11 +13,27 @@ export const TopBar = () => {
         </div>
         <div className="h-4 w-px bg-slate-800"></div>
         <nav className="flex gap-4">
-          <span className="text-[11px] text-slate-300 hover:text-white cursor-default">PROJECT_X_SCAN_01</span>
-          <span className="text-[11px] text-slate-500">/</span>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-slate-300">ADAPTER:</span>
-            <span className="text-[11px] text-ame-accent font-bold tracking-widest">{stats.activeAdapter}</span>
+          <div className="flex items-center gap-2 group/nav relative">
+            <span className="text-[11px] text-slate-500 uppercase font-mono tracking-tighter">Project</span>
+            <span className="text-[11px] text-slate-300 hover:text-white cursor-default">SCAN_01</span>
+          </div>
+          <div className="h-4 w-px bg-slate-800"></div>
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] text-slate-500 font-mono">ADAPTER:</span>
+            <div className="flex bg-slate-900 border border-ame-border p-0.5 rounded-sm">
+              <button 
+                onClick={() => useEngineStore.getState().switchAdapter('UNREAL')}
+                className={`px-2 py-0.5 font-mono text-[9px] font-bold transition-all ${stats.activeAdapter === 'UNREAL' ? 'bg-ame-accent text-black' : 'text-slate-500 hover:text-slate-300'}`}
+              >
+                UNREAL
+              </button>
+              <button 
+                onClick={() => useEngineStore.getState().switchAdapter('UNITY')}
+                className={`px-2 py-0.5 font-mono text-[9px] font-bold transition-all ${stats.activeAdapter === 'UNITY' ? 'bg-ame-accent text-black' : 'text-slate-500 hover:text-slate-300'}`}
+              >
+                UNITY
+              </button>
+            </div>
           </div>
         </nav>
       </div>
