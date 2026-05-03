@@ -19,7 +19,26 @@ export interface InferenceLog {
   routingPath: string;
 }
 
+export interface SensorStream {
+  topic: string;
+  type: 'Lidar' | 'Radar' | 'Camera';
+  hz: number;
+  latency: number;
+  status: 'ACTIVE' | 'IDLE' | 'STALE';
+}
+
 interface EngineState {
+  // Sensor Bridge
+  sensors: SensorStream[];
+  mcap: {
+    status: 'RECORDING' | 'PLAYBACK' | 'READY';
+    recordingTime: number;
+    fileSize: string;
+    bufferUsage: number;
+  };
+  updateMcap: (updates: Partial<EngineState['mcap']>) => void;
+  toggleRecording: () => void;
+  
   // Scene
   nodes: SceneNode[];
   selectedNodeId: string | null;
@@ -160,6 +179,35 @@ export const useEngineStore = create<EngineState>((set) => ({
   updateStats: (updates) => set((state) => ({
     stats: { ...state.stats, ...updates }
   })),
+  
+  // Sensor Actions
+  sensors: [
+    { topic: '/ros2/lidar_front', type: 'Lidar', hz: 10, latency: 12, status: 'ACTIVE' },
+    { topic: '/v1/radar/return', type: 'Radar', hz: 20, latency: 8, status: 'ACTIVE' },
+    { topic: '/v1/cam/center', type: 'Camera', hz: 30, latency: 45, status: 'IDLE' },
+  ],
+  mcap: {
+    status: 'READY',
+    recordingTime: 0,
+    fileSize: '0.0 MB',
+    bufferUsage: 0,
+  },
+  updateMcap: (updates) => set((state) => ({
+    mcap: { ...state.mcap, ...updates }
+  })),
+  toggleRecording: () => set((state) => {
+    const isRecording = state.mcap.status === 'RECORDING';
+    const nextStatus = isRecording ? 'READY' : 'RECORDING';
+    
+    state.addLog({
+      source: 'SYSTEM',
+      level: isRecording ? 'OK' : 'WNG',
+      message: isRecording ? 'MCAP Session Stopped. File Finalized.' : 'MCAP Session Started. Recording /ros2/ topics...'
+    });
+
+    return { mcap: { ...state.mcap, status: nextStatus, recordingTime: 0 } };
+  }),
+
   switchAdapter: (adapter) => {
     const { stats, addLog } = useEngineStore.getState();
     if (stats.activeAdapter === adapter) return;

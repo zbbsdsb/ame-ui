@@ -11,13 +11,52 @@ import {
 import { motion } from 'motion/react';
 
 export const Viewport = () => {
-  const { nodes, selectedNodeId, routing, stats } = useEngineStore();
+  const { nodes, selectedNodeId, routing, stats, mcap } = useEngineStore();
   const selectedNode = nodes.find(n => n.id === selectedNodeId);
   const visualFacet = selectedNode?.facets.find(f => f.type === 'Visual');
+  const sensorFacet = selectedNode?.facets.find(f => f.type === 'Sensor');
   const position = visualFacet?.data.position || [0, 0, 0];
 
   return (
     <div className="relative h-full bg-[#020202] overflow-hidden group">
+      {/* MCAP Recording Indicator */}
+      {mcap.status === 'RECORDING' && (
+        <div className="absolute top-6 right-6 z-30 flex items-center gap-3 bg-red-600 px-3 py-1.5 rounded-sm shadow-lg shadow-red-900/40">
+           <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+           <span className="font-mono text-[11px] font-bold text-white tracking-widest">MCAP_REC</span>
+           <div className="h-4 w-px bg-white/30" />
+           <span className="font-mono text-[11px] text-white tabular-nums">0.1GB</span>
+        </div>
+      )}
+
+      {/* Sensor Radar Overlay */}
+      {sensorFacet && (
+        <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
+          <div className="w-[500px] h-[500px] border border-ame-accent/20 rounded-full relative">
+            <div className="absolute inset-0 border border-ame-accent/10 rounded-full scale-75" />
+            <div className="absolute inset-0 border border-ame-accent/5 rounded-full scale-50" />
+            <motion.div 
+              className="absolute inset-0 origin-center bg-gradient-to-tr from-ame-accent/20 to-transparent rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+            />
+            {/* Random "Points" */}
+            {[...Array(5)].map((_, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 1, 0] }}
+                transition={{ duration: 2, repeat: Infinity, delay: i * 0.4 }}
+                className="absolute w-1 h-1 bg-ame-accent shadow-[0_0_10px_#A7F3D0]"
+                style={{ 
+                  left: `${50 + (Math.random() - 0.5) * 60}%`,
+                  top: `${50 + (Math.random() - 0.5) * 60}%`
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
       {/* Patching Overlay */}
       {stats.status === 'PATCHING' && (
         <motion.div 

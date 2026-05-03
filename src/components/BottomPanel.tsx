@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Terminal, Cpu } from 'lucide-react';
+import { Terminal, Cpu, Radio } from 'lucide-react';
 import { Console } from './Console';
 import { ModelRouterDashboard } from './ModelRouterDashboard';
+import { SensorBridgeDashboard } from './SensorBridgeDashboard';
 
 export const BottomPanel = () => {
-  const [activeTab, setActiveTab] = useState<'CONSOLE' | 'MODELS'>('CONSOLE');
+  const [activeTab, setActiveTab] = useState<'CONSOLE' | 'MODELS' | 'SENSORS'>('CONSOLE');
 
   return (
     <div className="flex flex-col h-full bg-black">
@@ -21,9 +22,17 @@ export const BottomPanel = () => {
           icon={Cpu} 
           label="Model Router" 
         />
+        <TabButton 
+          active={activeTab === 'SENSORS'} 
+          onClick={() => setActiveTab('SENSORS')} 
+          icon={Radio} 
+          label="Sensor Bridge" 
+        />
       </div>
       <div className="flex-1 overflow-hidden flex flex-col">
-        {activeTab === 'CONSOLE' ? <Console /> : <ModelRouterDashboard />}
+        {activeTab === 'CONSOLE' && <Console />}
+        {activeTab === 'MODELS' && <ModelRouterDashboard />}
+        {activeTab === 'SENSORS' && <SensorBridgeDashboard />}
       </div>
     </div>
   );
