@@ -79,9 +79,14 @@ export const Viewport = () => {
           <motion.div 
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-ame-accent px-2 py-0.5 font-mono text-[8px] font-bold text-black uppercase"
+            className="flex flex-col gap-0.5"
           >
-            Routing: {routing.lastModel}
+            <div className="bg-ame-accent px-2 py-0.5 font-mono text-[8px] font-bold text-black uppercase">
+              Routing: {routing.lastModel}
+            </div>
+            <div className="bg-black/60 border border-ame-accent/30 px-2 py-0.5 font-mono text-[7px] text-ame-accent uppercase tracking-tighter">
+              Path: {routing.path}
+            </div>
           </motion.div>
         )}
         <div className="bg-black/30 border border-ame-border/50 px-2 py-1 font-mono text-[9px] uppercase text-slate-500 leading-none">

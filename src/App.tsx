@@ -13,7 +13,7 @@ import { TopBar } from './components/TopBar';
 import { ResizeHandle } from './components/ResizeHandle';
 import { SceneTree } from './components/SceneTree';
 import { Viewport } from './components/Viewport';
-import { Console } from './components/Console';
+import { BottomPanel } from './components/BottomPanel';
 import { Inspector } from './components/Inspector';
 
 export default function App() {
@@ -42,9 +42,9 @@ export default function App() {
               
               <ResizeHandle direction="vertical" />
               
-              {/* Bottom Tray: Console */}
+              {/* Bottom Tray */}
               <Panel defaultSize={30} minSize={10}>
-                <Console />
+                <BottomPanel />
               </Panel>
             </PanelGroup>
           </Panel>

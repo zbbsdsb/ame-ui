@@ -1,6 +1,24 @@
 import { create } from 'zustand';
 import { SceneNode, LogEntry, EngineStats } from '../types';
 
+export interface ModelEntry {
+  id: string;
+  name: string;
+  tier: 'P0' | 'P1' | 'P2'; // P0: Local/Private, P1: Controlled Commercial, P2: Public
+  status: 'ONLINE' | 'OFFLINE' | 'LATENCY_HIGH';
+  latency: number;
+}
+
+export interface InferenceLog {
+  id: string;
+  timestamp: string;
+  modelId: string;
+  entityId: string | null;
+  latency: number;
+  tokens: number;
+  routingPath: string;
+}
+
 interface EngineState {
   // Scene
   nodes: SceneNode[];
@@ -13,16 +31,21 @@ interface EngineState {
   addLog: (log: Omit<LogEntry, 'id' | 'timestamp'>) => void;
   clearLogs: () => void;
   
+  // Model Router
+  models: ModelEntry[];
+  inferenceHistory: InferenceLog[];
+  
   // Engine
   stats: EngineStats;
   routing: {
     active: boolean;
     lastModel: string;
     targetEntity: string | null;
+    path: string;
   };
   updateStats: (updates: Partial<EngineStats>) => void;
   switchAdapter: (adapter: 'UNREAL' | 'UNITY') => void;
-  triggerInference: (model: string, entityId: string) => void;
+  triggerInference: (modelId: string, entityId: string | null) => void;
 }
 
 const INITIAL_NODES: SceneNode[] = [
@@ -121,10 +144,18 @@ export const useEngineStore = create<EngineState>((set) => ({
     status: 'READY',
     activeAdapter: 'UNREAL'
   },
+  models: [
+    { id: 'gpt-4o', name: 'OpenAI GPT-4o', tier: 'P1', status: 'ONLINE', latency: 450 },
+    { id: 'vllm-llama3', name: 'vLLM Llama-3-70B', tier: 'P0', status: 'ONLINE', latency: 42 },
+    { id: 'gemini-1.5', name: 'Gemini 1.5 Pro', tier: 'P1', status: 'ONLINE', latency: 280 },
+    { id: 'deepseek-coder', name: 'DeepSeek Coder', tier: 'P2', status: 'ONLINE', latency: 1200 },
+  ],
+  inferenceHistory: [],
   routing: {
     active: false,
     lastModel: 'GPT-4o',
-    targetEntity: null
+    targetEntity: null,
+    path: 'DIRECT_ROUTE'
   },
   updateStats: (updates) => set((state) => ({
     stats: { ...state.stats, ...updates }
@@ -155,10 +186,40 @@ export const useEngineStore = create<EngineState>((set) => ({
       });
     }, 1500);
   },
-  triggerInference: (model, entityId) => {
-    set({ routing: { active: true, lastModel: model, targetEntity: entityId }});
+  triggerInference: (modelId, entityId) => {
+    const { models, addLog } = useEngineStore.getState();
+    const model = models.find(m => m.id === modelId) || models[0];
+    const path = model.tier === 'P0' ? 'LOCAL_SECURE_BYPASS' : model.tier === 'P1' ? 'MANAGED_PROXY_SAAS' : 'PUBLIC_GATEWAY';
+
+    set({ routing: { active: true, lastModel: model.name, targetEntity: entityId, path }});
+    
+    addLog({
+      source: 'METACLASS',
+      level: 'INFO',
+      message: `ROUTING: [${model.tier}] ${model.name} -> ${path}`
+    });
+
     setTimeout(() => {
-      set({ routing: { active: false, lastModel: model, targetEntity: entityId }});
-    }, 2000);
+      const historyEntry: InferenceLog = {
+        id: Math.random().toString(36).substr(2, 9),
+        timestamp: new Date().toLocaleTimeString('en-GB'),
+        modelId,
+        entityId,
+        latency: model.latency + Math.random() * 50,
+        tokens: Math.floor(Math.random() * 1000),
+        routingPath: path
+      };
+
+      set((state) => ({ 
+        routing: { ...state.routing, active: false },
+        inferenceHistory: [historyEntry, ...state.inferenceHistory].slice(0, 50)
+      }));
+      
+      addLog({
+        source: 'METACLASS',
+        level: 'OK',
+        message: `INFERENCE_COMPLETE: ${model.name} (${historyEntry.latency.toFixed(1)}ms)`
+      });
+    }, 1000);
   }
 }));

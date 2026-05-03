@@ -16,7 +16,7 @@ export const Console = () => {
         message: `EXECUTE: ${input}`
       });
       if (selectedNodeId) {
-        triggerInference('OpenAI/GPT-4o', selectedNodeId);
+        triggerInference('vllm-llama3', selectedNodeId);
       }
       setInput('');
     }
