@@ -67,19 +67,22 @@ const FacetPanel = ({ facet, onUpdate }: { facet: Facet, onUpdate: (field: strin
 
   return (
     <div className="border-b border-ame-border relative">
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-900/40 to-transparent pointer-events-none" />
       {isRoutingActive && (
-        <div className="absolute inset-0 bg-ame-accent/[0.02] pointer-events-none overflow-hidden">
-          <div className="w-full h-px bg-ame-accent/20 ame-scan-line blur-[2px]" />
+        <div className="absolute inset-0 bg-ame-accent/[0.04] pointer-events-none overflow-hidden">
+          <div className="w-full h-px bg-ame-accent/30 ame-scan-line blur-[1.5px]" />
         </div>
       )}
-      <div className="px-3 py-2 bg-slate-900/30 flex justify-between items-center group">
+      <div className="px-3 py-2 bg-slate-900/30 flex justify-between items-center group relative z-10">
         <div className="flex items-center gap-2">
-          <Database className="w-3 h-3 text-ame-accent" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-white">{facet.type} Facet</span>
+          <div className="p-1 rounded-sm bg-ame-accent/10">
+            <Database className="w-3 h-3 text-ame-accent" />
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-200">{facet.type} Facet</span>
         </div>
-        <div className={`px-1 font-mono text-[8px] border ${
-          facet.status === 'SYNCHRONIZED' ? 'border-ame-accent text-ame-accent' : 
-          facet.status === 'DIRTY' ? 'border-yellow-500 text-yellow-500' : 'border-red-500 text-red-500'
+        <div className={`px-1.5 py-0.5 font-mono text-[8px] border backdrop-blur-sm ${
+          facet.status === 'SYNCHRONIZED' ? 'border-ame-accent/40 text-ame-accent ame-glow' : 
+          facet.status === 'DIRTY' ? 'border-yellow-500/40 text-yellow-500' : 'border-red-500/40 text-red-500'
         }`}>
           {facet.status}
         </div>

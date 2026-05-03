@@ -109,18 +109,25 @@ export const Viewport = () => {
       </div>
 
       {/* Top Left HUD */}
-      <div className="absolute top-6 left-6 flex flex-col gap-1 z-20">
-        <div className="bg-black/90 border border-ame-border px-2 py-1 flex items-center gap-2">
+      <div className="absolute top-6 left-6 flex flex-col gap-1 z-20 mix-blend-screen">
+        <motion.div 
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="bg-black/90 border border-ame-border px-2 py-1 flex items-center gap-2 relative overflow-hidden"
+        >
           <div className={`w-1 h-1 ${routing.active ? 'bg-ame-accent animate-ping' : 'bg-ame-accent'}`} />
-          <span className="font-mono text-[10px] uppercase text-white tracking-widest leading-none">Perspective</span>
-        </div>
+          <span className="font-mono text-[10px] uppercase text-white tracking-[0.2em] leading-none ame-glow">Perspective</span>
+          {/* Subtle Chromatic Line */}
+          <div className="absolute bottom-0 left-0 w-full h-[1px] bg-red-500/50 translate-x-[-1px]" />
+        </motion.div>
+        
         {routing.active && (
           <motion.div 
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col gap-0.5"
           >
-            <div className="bg-ame-accent px-2 py-0.5 font-mono text-[8px] font-bold text-black uppercase">
+            <div className="bg-ame-accent px-2 py-0.5 font-mono text-[8px] font-bold text-black uppercase shadow-[0_0_15px_rgba(167,243,208,0.3)]">
               Routing: {routing.lastModel}
             </div>
             <div className="bg-black/60 border border-ame-accent/30 px-2 py-0.5 font-mono text-[7px] text-ame-accent uppercase tracking-tighter">
@@ -128,8 +135,26 @@ export const Viewport = () => {
             </div>
           </motion.div>
         )}
-        <div className="bg-black/30 border border-ame-border/50 px-2 py-1 font-mono text-[9px] uppercase text-slate-500 leading-none">
+        
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="bg-black/30 border border-ame-border/50 px-2 py-1 font-mono text-[9px] uppercase text-slate-500 leading-none backdrop-blur-md"
+        >
           FOV: 90.0°
+        </motion.div>
+      </div>
+
+      {/* Center Reticle Decor */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+        <div className="relative w-24 h-24">
+           <motion.div 
+             animate={{ rotate: 90 }}
+             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+             className="absolute inset-0 border border-t-ame-accent/40 border-l-transparent border-r-transparent border-b-transparent rounded-full" 
+           />
+           <div className="absolute inset-[45%] bg-ame-accent/40 rounded-full" />
         </div>
       </div>
 

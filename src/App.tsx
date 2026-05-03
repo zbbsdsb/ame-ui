@@ -18,10 +18,18 @@ import { Inspector } from './components/Inspector';
 
 export default function App() {
   return (
-    <div className="h-screen w-screen flex flex-col bg-black selection:bg-ame-accent selection:text-black font-sans">
-      <TopBar />
-      
-      <div className="flex-1 flex overflow-hidden">
+    <div className="h-screen w-screen flex flex-col bg-black selection:bg-ame-accent selection:text-black font-sans relative overflow-hidden">
+      {/* Aesthetic Overlays */}
+      <div className="ame-grain" />
+      <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-ame-accent/20 blur-[150px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 blur-[150px] rounded-full" />
+      </div>
+
+      <div className="relative z-10 flex flex-col h-full">
+        <TopBar />
+        
+        <div className="flex-1 flex overflow-hidden">
         <PanelGroup orientation="horizontal">
           
           {/* Left Panel: Scene Tree */}
@@ -59,6 +67,7 @@ export default function App() {
         </PanelGroup>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
