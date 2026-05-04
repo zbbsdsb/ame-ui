@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Terminal, Cpu, Radio } from 'lucide-react';
+import { Terminal, Cpu, Radio, GitBranch } from 'lucide-react';
 import { Console } from './Console';
 import { ModelRouterDashboard } from './ModelRouterDashboard';
 import { SensorBridgeDashboard } from './SensorBridgeDashboard';
+import { StudioCanvas } from './StudioCanvas';
 
 export const BottomPanel = () => {
-  const [activeTab, setActiveTab] = useState<'CONSOLE' | 'MODELS' | 'SENSORS'>('CONSOLE');
+  const [activeTab, setActiveTab] = useState<'CONSOLE' | 'MODELS' | 'SENSORS' | 'STUDIO'>('CONSOLE');
 
   return (
     <div className="flex flex-col h-full bg-black">
@@ -28,11 +29,18 @@ export const BottomPanel = () => {
           icon={Radio} 
           label="Sensor Bridge" 
         />
+        <TabButton 
+          active={activeTab === 'STUDIO'} 
+          onClick={() => setActiveTab('STUDIO')} 
+          icon={GitBranch} 
+          label="Workflow Studio" 
+        />
       </div>
       <div className="flex-1 overflow-hidden flex flex-col">
         {activeTab === 'CONSOLE' && <Console />}
         {activeTab === 'MODELS' && <ModelRouterDashboard />}
         {activeTab === 'SENSORS' && <SensorBridgeDashboard />}
+        {activeTab === 'STUDIO' && <StudioCanvas />}
       </div>
     </div>
   );

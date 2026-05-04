@@ -14,6 +14,31 @@ export interface SceneNode {
   facets: Facet[];
 }
 
+export interface WorkflowPort {
+  id: string;
+  name: string;
+  type: 'IN' | 'OUT';
+  dataType: 'DATA' | 'SIGNAL' | 'MODEL' | 'SENSOR';
+}
+
+export interface WorkflowNode {
+  id: string;
+  type: 'SENSOR_BRIDGE' | 'AI_INFERENCE' | 'LOGIC' | 'OUT_USD';
+  name: string;
+  position: { x: number; y: number };
+  inputs: WorkflowPort[];
+  outputs: WorkflowPort[];
+  data: Record<string, any>;
+}
+
+export interface WorkflowEdge {
+  id: string;
+  fromNodeId: string;
+  fromPortId: string;
+  toNodeId: string;
+  toPortId: string;
+}
+
 export interface LogEntry {
   id: string;
   timestamp: string;

@@ -16,7 +16,13 @@ import { Viewport } from './components/Viewport';
 import { BottomPanel } from './components/BottomPanel';
 import { Inspector } from './components/Inspector';
 
+import { GitBranch } from 'lucide-react';
+import { useEngineStore } from './store/useEngineStore';
+import { StudioCanvas } from './components/StudioCanvas';
+
 export default function App() {
+  const { isStudioExpanded, setStudioExpanded } = useEngineStore();
+
   return (
     <div className="h-screen w-screen flex flex-col bg-black selection:bg-ame-accent selection:text-black font-sans relative overflow-hidden">
       {/* Aesthetic Overlays */}
@@ -29,8 +35,28 @@ export default function App() {
       <div className="relative z-10 flex flex-col h-full">
         <TopBar />
         
-        <div className="flex-1 flex overflow-hidden">
-        <PanelGroup orientation="horizontal">
+        <div className="flex-1 flex overflow-hidden relative">
+          {isStudioExpanded ? (
+            <div className="absolute inset-0 z-50 flex flex-col bg-black">
+              <div className="h-10 border-b border-ame-border flex items-center px-4 justify-between bg-black/80 backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                  <GitBranch className="w-4 h-4 text-ame-accent" />
+                  <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white">Workflow Studio / Studio_Core_01</span>
+                </div>
+                <button 
+                  onClick={() => setStudioExpanded(false)}
+                  className="px-3 py-1 bg-ame-accent text-black font-mono text-[9px] font-bold uppercase hover:bg-white transition-colors"
+                >
+                  Exit Studio
+                </button>
+              </div>
+              <div className="flex-1">
+                <StudioCanvas />
+              </div>
+            </div>
+          ) : null}
+
+          <PanelGroup orientation="horizontal">
           
           {/* Left Panel: Scene Tree */}
           <Panel defaultSize={20} minSize={10} className="border-r border-ame-border">

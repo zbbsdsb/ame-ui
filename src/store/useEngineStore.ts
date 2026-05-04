@@ -44,6 +44,16 @@ interface EngineState {
   commandHistory: string[];
   processCommand: (input: string) => void;
   
+  // Workflow Studio
+  workflowNodes: WorkflowNode[];
+  workflowEdges: WorkflowEdge[];
+  isStudioExpanded: boolean;
+  setStudioExpanded: (expanded: boolean) => void;
+  addWorkflowNode: (node: Omit<WorkflowNode, 'id'>) => void;
+  updateWorkflowNode: (id: string, updates: Partial<WorkflowNode>) => void;
+  connectPorts: (fromNodeId: string, fromPortId: string, toNodeId: string, toPortId: string) => void;
+  removeWorkflowEdge: (id: string) => void;
+  
   // Scene
   nodes: SceneNode[];
   selectedNodeId: string | null;
@@ -344,5 +354,45 @@ export const useEngineStore = create<EngineState>((set) => ({
         message: `INFERENCE_COMPLETE: ${model.name} (${historyEntry.latency.toFixed(1)}ms)`
       });
     }, 1000);
-  }
+  },
+  
+  // Workflow Studio Initial State & Actions
+  workflowNodes: [
+    {
+      id: 'node_1',
+      type: 'SENSOR_BRIDGE',
+      name: 'LiDAR_Stream_Front',
+      position: { x: 100, y: 100 },
+      inputs: [],
+      outputs: [{ id: 'p1', name: 'Raw_PC2', type: 'OUT', dataType: 'SENSOR' }],
+      data: {}
+    },
+    {
+      id: 'node_2',
+      type: 'AI_INFERENCE',
+      name: 'Object_Detection_L3',
+      position: { x: 400, y: 150 },
+      inputs: [{ id: 'p2', name: 'Input_PC2', type: 'IN', dataType: 'SENSOR' }],
+      outputs: [{ id: 'p3', name: 'Detections', type: 'OUT', dataType: 'DATA' }],
+      data: { model: 'vllm-llama3' }
+    }
+  ],
+  workflowEdges: [],
+  isStudioExpanded: false,
+  setStudioExpanded: (expanded) => set({ isStudioExpanded: expanded }),
+  addWorkflowNode: (node) => set((state) => ({
+    workflowNodes: [...state.workflowNodes, { ...node, id: `node_${Math.random().toString(36).substr(2, 9)}` }]
+  })),
+  updateWorkflowNode: (id, updates) => set((state) => ({
+    workflowNodes: state.workflowNodes.map(n => n.id === id ? { ...n, ...updates } : n)
+  })),
+  connectPorts: (fromNodeId, fromPortId, toNodeId, toPortId) => set((state) => ({
+    workflowEdges: [...state.workflowEdges, { 
+      id: `edge_${Math.random().toString(36).substr(2, 9)}`, 
+      fromNodeId, fromPortId, toNodeId, toPortId 
+    }]
+  })),
+  removeWorkflowEdge: (id) => set((state) => ({
+    workflowEdges: state.workflowEdges.filter(e => e.id !== id)
+  })),
 }));
