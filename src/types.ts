@@ -17,7 +17,7 @@ export interface SceneNode {
 export interface LogEntry {
   id: string;
   timestamp: string;
-  source: 'SYSTEM' | 'VULKAN' | '3DGS' | 'RENDER' | 'CORE' | 'METACLASS' | 'USD';
+  source: 'SYSTEM' | 'VULKAN' | '3DGS' | 'RENDER' | 'CORE' | 'METACLASS' | 'USD' | 'CLI' | 'USER' | 'META_SEARCH';
   level: 'INFO' | 'OK' | 'WNG' | 'ERR';
   message: string;
 }

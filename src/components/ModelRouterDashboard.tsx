@@ -62,7 +62,7 @@ export const ModelRouterDashboard = () => {
   );
 };
 
-const ModelCard = ({ model, onTrigger }: { model: ModelEntry, onTrigger: () => void }) => {
+const ModelCard = ({ model, onTrigger }: { model: ModelEntry, onTrigger: () => void, key?: React.Key }) => {
   const tierIcon = {
     P0: <Lock className="w-3 h-3 text-emerald-500" />,
     P1: <Globe className="w-3 h-3 text-blue-500" />,
@@ -94,7 +94,7 @@ const ModelCard = ({ model, onTrigger }: { model: ModelEntry, onTrigger: () => v
   );
 };
 
-const HistoryItem = ({ log }: { log: InferenceLog }) => (
+const HistoryItem = ({ log }: { log: InferenceLog, key?: React.Key }) => (
   <motion.div 
     initial={{ opacity: 0, x: 20 }}
     animate={{ opacity: 1, x: 0 }}

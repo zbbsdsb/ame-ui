@@ -129,7 +129,7 @@ export const SensorBridgeDashboard = () => {
   );
 };
 
-const SensorItem = ({ sensor }: { sensor: SensorStream }) => (
+const SensorItem = ({ sensor }: { sensor: SensorStream, key?: React.Key }) => (
   <div className="flex items-center justify-between p-3 bg-slate-900/40 border border-ame-border hover:border-slate-700 transition-colors group">
     <div className="flex items-center gap-4">
       <div className={`p-2 bg-black border ${sensor.status === 'ACTIVE' ? 'border-ame-accent/50' : 'border-ame-border'}`}>

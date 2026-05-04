@@ -6,12 +6,13 @@ import {
   Maximize, 
   MousePointer2,
   Minimize2,
-  Crosshair
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { ToolbarButton } from './ToolbarButton';
+import { Gizmo } from './Gizmo';
 
 export const Viewport = () => {
-  const { nodes, selectedNodeId, routing, stats, mcap } = useEngineStore();
+  const { nodes, selectedNodeId, routing, stats, mcap, gizmoMode, setGizmoMode } = useEngineStore();
   const selectedNode = nodes.find(n => n.id === selectedNodeId);
   const visualFacet = selectedNode?.facets.find(f => f.type === 'Visual');
   const sensorFacet = selectedNode?.facets.find(f => f.type === 'Sensor');
@@ -19,6 +20,9 @@ export const Viewport = () => {
 
   return (
     <div className="relative h-full bg-[#020202] overflow-hidden group">
+      {/* Gizmo Overlay */}
+      <Gizmo />
+
       {/* MCAP Recording Indicator */}
       {mcap.status === 'RECORDING' && (
         <div className="absolute top-6 right-6 z-30 flex items-center gap-3 bg-red-600 px-3 py-1.5 rounded-sm shadow-lg shadow-red-900/40">
@@ -189,11 +193,31 @@ export const Viewport = () => {
 
       {/* Floating Toolbar (Gizmo Selectors) */}
       <div className="absolute top-1/2 right-6 transform -translate-y-1/2 z-20 flex flex-col gap-2">
-        <ToolbarButton icon={MousePointer2} active tip="Select" />
+        <ToolbarButton 
+          icon={MousePointer2} 
+          active={gizmoMode === 'SELECT'} 
+          tip="Select" 
+          onClick={() => setGizmoMode('SELECT')}
+        />
         <div className="h-px w-full bg-ame-border my-1" />
-        <ToolbarButton icon={Move} tip="Translate" />
-        <ToolbarButton icon={Rotate3d} tip="Rotate" />
-        <ToolbarButton icon={Maximize} tip="Scale" />
+        <ToolbarButton 
+          icon={Move} 
+          active={gizmoMode === 'TRANSLATE'} 
+          tip="Translate" 
+          onClick={() => setGizmoMode('TRANSLATE')}
+        />
+        <ToolbarButton 
+          icon={Rotate3d} 
+          active={gizmoMode === 'ROTATE'} 
+          tip="Rotate" 
+          onClick={() => setGizmoMode('ROTATE')}
+        />
+        <ToolbarButton 
+          icon={Maximize} 
+          active={gizmoMode === 'SCALE'} 
+          tip="Scale" 
+          onClick={() => setGizmoMode('SCALE')}
+        />
       </div>
 
       {/* Bottom HUD */}
@@ -209,23 +233,15 @@ export const Viewport = () => {
       </div>
 
       <div className="absolute bottom-6 right-6 z-20">
-        <div className="w-24 h-24 border border-ame-border border-dashed flex flex-col items-center justify-center group/gizmo hover:border-ame-accent transition-colors cursor-crosshair">
-          <Minimize2 className="w-3 h-3 text-slate-600 mb-1 group-hover/gizmo:text-ame-accent" />
-          <span className="font-mono text-[9px] text-slate-600 group-hover/gizmo:text-ame-accent">GIZMO_VIEW</span>
-        </div>
+        <GizmoViewport />
       </div>
     </div>
   );
 };
 
-const ToolbarButton = ({ icon: Icon, active, tip }: { icon: any, active?: boolean, tip: string }) => (
-  <button className={`
-    w-8 h-8 flex items-center justify-center border transition-all duration-150 relative group
-    ${active ? 'bg-ame-accent border-ame-accent text-black' : 'bg-black border-ame-border text-slate-500 hover:border-ame-accent hover:text-white'}
-  `}>
-    <Icon className="w-4 h-4" />
-    <div className="absolute right-full mr-2 px-2 py-1 bg-black border border-ame-border opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-      <span className="font-mono text-[9px] uppercase tracking-widest text-white whitespace-nowrap">{tip}</span>
-    </div>
-  </button>
+const GizmoViewport = () => (
+  <div className="w-24 h-24 border border-ame-border border-dashed flex flex-col items-center justify-center group/gizmo hover:border-ame-accent transition-colors cursor-crosshair">
+    <Minimize2 className="w-3 h-3 text-slate-600 mb-1 group-hover/gizmo:text-ame-accent" />
+    <span className="font-mono text-[9px] text-slate-600 group-hover/gizmo:text-ame-accent uppercase">GIZMO_VIEW</span>
+  </div>
 );

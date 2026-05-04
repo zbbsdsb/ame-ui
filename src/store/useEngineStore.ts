@@ -60,6 +60,8 @@ interface EngineState {
   inferenceHistory: InferenceLog[];
   
   // Engine
+  gizmoMode: 'SELECT' | 'TRANSLATE' | 'ROTATE' | 'SCALE';
+  setGizmoMode: (mode: 'SELECT' | 'TRANSLATE' | 'ROTATE' | 'SCALE') => void;
   stats: EngineStats;
   routing: {
     active: boolean;
@@ -208,6 +210,8 @@ export const useEngineStore = create<EngineState>((set) => ({
   nodes: INITIAL_NODES,
   selectedNodeId: 'aeid.3dgs.01',
   selectNode: (id) => set({ selectedNodeId: id }),
+  gizmoMode: 'SELECT',
+  setGizmoMode: (mode) => set({ gizmoMode: mode }),
   updateNode: (id, updates) => set((state) => ({
     nodes: state.nodes.map(node => node.id === id ? { ...node, ...updates } : node)
   })),

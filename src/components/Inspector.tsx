@@ -61,7 +61,7 @@ export const Inspector = () => {
   );
 };
 
-const FacetPanel = ({ facet, onUpdate }: { facet: Facet, onUpdate: (field: string, val: any) => void }) => {
+const FacetPanel = ({ facet, onUpdate }: { facet: Facet, onUpdate: (field: string, val: any) => void, key?: React.Key }) => {
   const { routing } = useEngineStore();
   const isRoutingActive = routing.active && routing.targetEntity && facet.type !== 'Provenance';
 
