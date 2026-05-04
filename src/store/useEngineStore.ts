@@ -378,9 +378,23 @@ export const useEngineStore = create<EngineState>((set) => ({
       inputs: [{ id: 'p2', name: 'Input_PC2', type: 'IN', dataType: 'SENSOR' }],
       outputs: [{ id: 'p3', name: 'Detections', type: 'OUT', dataType: 'DATA' }],
       data: { model: 'vllm-llama3' }
-    }
+    },
+    { 
+      id: 'node_ex_1', 
+      type: 'OUT_USD', 
+      name: 'USD_EXPORTER_NODE', 
+      position: { x: 500, y: 150 }, 
+      inputs: [{ id: 'p_in', name: 'AMAR_PAYLOAD', dataType: 'DATA' }], 
+      outputs: [
+        { id: 'p_ue', name: 'UE_LINK', dataType: 'SIGNAL' },
+        { id: 'p_unity', name: 'UNITY_LINK', dataType: 'SIGNAL' }
+      ],
+      data: { format: 'USD_BINARY' } 
+    },
   ],
-  workflowEdges: [],
+  workflowEdges: [
+    { id: 'edge_1', fromNodeId: 'node_1', fromPortId: 'p1', toNodeId: 'node_ex_1', toPortId: 'p_in' }
+  ],
   isStudioExpanded: false,
   isWorkflowRunning: true,
   setWorkflowRunning: (running) => set({ isWorkflowRunning: running }),

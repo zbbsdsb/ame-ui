@@ -67,7 +67,28 @@ export const Inspector = () => {
             />
           </motion.div>
         ))}
-        
+
+        {/* Target Overrides Section */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="px-3 py-6 border-t border-ame-border mt-4"
+        >
+          <div className="ame-label mb-3 text-white/40 font-bold uppercase tracking-widest text-[9px]">Target Exporter Overrides</div>
+          <div className="space-y-1.5">
+            {['UE5_Livelink', 'Blender_USD'].map((target) => (
+              <div key={target} className="flex items-center justify-between p-2 border border-ame-border/10 bg-slate-900/10 group hover:border-ame-accent/20 transition-all cursor-default">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-medium text-slate-400 group-hover:text-slate-200 transition-colors uppercase tracking-tight">{target}</span>
+                  <span className="text-[8px] text-slate-600 font-mono tracking-tighter">AMAR_INHERITED</span>
+                </div>
+                <button className="text-[8px] font-bold text-ame-accent opacity-0 group-hover:opacity-100 uppercase tracking-widest transition-opacity px-2 py-0.5 border border-ame-accent/20 hover:bg-ame-accent hover:text-black">
+                  CMD
+                </button>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </div>
   );

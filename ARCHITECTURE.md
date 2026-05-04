@@ -2,17 +2,16 @@
 
 This document outlines the internal architecture and patterns of the AME UI Workbench to assist in future refactoring and integration with production backends.
 
-## 1. State Management (Zustand)
-The core engine state resides in `/src/store/useEngineStore.ts`. 
+## 1. Core Architecture: AMAR as the Origin
+AMAR UI is the command center for the **AMAR Engine Core**. 
+- **The Core**: Performs all deterministic logic, physics validation, and generative AI alignment.
+- **The Targets**: UE, Unity, and Blender are treated as **Downstream Viewers** or **Export Slots**. 
+- **The Protocol**: Data is streamed via AMAR-Native USD or High-Performance RPC to targets, ensuring "Edit Once, Deploy Anywhere" behavior.
 
-### Key State Domains:
-- **Scene State**: `nodes`, `selectedNodeId`. Follows a USD-adjacent flat structure for performance.
-- **Inference State**: `models`, `inferenceHistory`, `routing`. Manages AI model selection and routing logic.
-- **Telemetry State**: `sensors` and `mcap` recording status.
-- **Workflow State**: `workflowNodes` and `workflowEdges` for the Studio Canvas.
-
-### Integration Path:
-To connect to a real backend (e.g., WebSocket or gRPC-web), inject a middleware or an effect within the store initialization to sync local state with remote updates.
+## 2. Exporter Pattern (Formerly Adapters)
+We treat external engines as deployment targets.
+- **Export Manifests**: Each node in the SceneTree can have specific overrides for different targets (e.g., "UE High-Poly", "Mobile Lite").
+- **LiveLink Synchronization**: Real-time sync is a *push* service from AMAR to targets, not a bridge between two equals.
 
 ## 2. Command Console Pattern
 The **Meta Console** uses a command-processing architecture. 

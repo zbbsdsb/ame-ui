@@ -18,21 +18,26 @@ export const TopBar = () => {
             <span className="text-[11px] text-slate-300 hover:text-white cursor-default">SCAN_01</span>
           </div>
           <div className="h-4 w-px bg-slate-800"></div>
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] text-slate-500 font-mono">ADAPTER:</span>
-            <div className="flex bg-slate-900 border border-ame-border p-0.5 rounded-sm">
-              <button 
-                onClick={() => useEngineStore.getState().switchAdapter('UNREAL')}
-                className={`px-2 py-0.5 font-mono text-[9px] font-bold transition-all ${stats.activeAdapter === 'UNREAL' ? 'bg-ame-accent text-black' : 'text-slate-500 hover:text-slate-300'}`}
-              >
-                UNREAL
-              </button>
-              <button 
-                onClick={() => useEngineStore.getState().switchAdapter('UNITY')}
-                className={`px-2 py-0.5 font-mono text-[9px] font-bold transition-all ${stats.activeAdapter === 'UNITY' ? 'bg-ame-accent text-black' : 'text-slate-500 hover:text-slate-300'}`}
-              >
-                UNITY
-              </button>
+          <div className="flex items-center gap-4 border-l border-slate-800 pl-4">
+            <div className="flex flex-col">
+              <span className="text-[8px] text-slate-500 font-mono uppercase tracking-widest leading-none mb-1">AMAR Master</span>
+              <div className="flex items-center gap-1.5 leading-none">
+                <div className="w-1 h-1 rounded-full bg-ame-accent shadow-[0_0_8px_#A7F3D0]" />
+                <span className="text-[10px] font-bold text-white font-mono tracking-tighter">THREAD_0_OK</span>
+              </div>
+            </div>
+            
+            <div className="h-6 w-px bg-slate-800"></div>
+
+            <div className="flex flex-col">
+              <span className="text-[8px] text-slate-500 font-mono uppercase tracking-widest leading-none mb-1">Active Exporters</span>
+              <div className="flex gap-1">
+                {['UE5_LIVELINK', 'UNITY_SDK', 'USD_SPOOL'].map(target => (
+                  <div key={target} className="px-1.5 py-0.5 border border-ame-border/40 bg-slate-900/40 text-[8px] font-mono text-ame-accent/80 hover:text-ame-accent transition-colors cursor-default">
+                    {target}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </nav>
