@@ -1,65 +1,104 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Terminal } from 'lucide-react';
 import { PanelHeader } from './PanelHeader';
 import { useEngineStore } from '../store/useEngineStore';
 
 export const Console = () => {
-  const { logs, addLog, triggerInference, selectedNodeId } = useEngineStore();
+  const { logs, processCommand, nodes, models, assets, sensors } = useEngineStore();
   const [input, setInput] = useState('');
 
   const handleCommand = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && input.trim()) {
-      addLog({
-        source: 'CORE',
-        level: 'INFO',
-        message: `EXECUTE: ${input}`
-      });
-      if (selectedNodeId) {
-        triggerInference('vllm-llama3', selectedNodeId);
-      }
+      processCommand(input);
       setInput('');
     }
   };
 
+  // Live Meta-Search Preview
+  const searchResults = input.trim().length > 1 && !input.startsWith('/') 
+    ? [
+        ...nodes.map(n => ({ type: 'NODE', name: n.name, id: n.id })),
+        ...models.map(m => ({ type: 'MODEL', name: m.name, id: m.id })),
+        ...assets.map(a => ({ type: 'ASSET', name: a.name, id: a.id })),
+        ...sensors.map(s => ({ type: 'SENSOR', name: s.topic, id: s.topic }))
+      ].filter(item => item.name.toLowerCase().includes(input.toLowerCase())).slice(0, 5)
+    : [];
+
   return (
-    <div className="h-full flex flex-col bg-black">
+    <div className="h-full flex flex-col bg-black relative">
       <PanelHeader 
-        title="Console Output" 
+        title="Meta Console" 
         icon={Terminal} 
         extra={
           <div className="flex gap-2 font-mono text-[9px]">
             <span className="text-ame-accent">[{logs.length}] LOGS</span>
-            <span className="text-white">[0] WARNINGS</span>
-            <span className="text-red-500">[0] ERRORS</span>
+            <span className="text-white hover:text-ame-accent cursor-pointer" onClick={() => useEngineStore.getState().clearLogs()}>[CLEAR]</span>
           </div>
         }
       />
-      <div className="flex-1 p-2 font-mono text-[10px] overflow-y-auto leading-relaxed text-slate-300 no-scrollbar">
-        {logs.map((log, index) => (
+      <div className="flex-1 p-2 font-mono text-[10px] overflow-y-auto leading-relaxed text-slate-300 no-scrollbar pb-12">
+        {logs.map((log) => (
           <motion.div 
             key={log.id} 
             initial={{ opacity: 0, x: -5 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0 }}
-            className="flex gap-4 group/log"
+            className="flex gap-4 group/log mb-0.5"
           >
-            <span className="text-slate-600 group-hover/log:text-ame-accent transition-colors">[{log.timestamp}]</span>
+            <span className="text-slate-600">[{log.timestamp}]</span>
             <span className={`
               font-bold ${log.level === 'ERR' ? 'text-red-500' : log.level === 'WNG' ? 'text-yellow-500' : 'text-ame-accent'}
             `}>{log.source}:</span>
-            <span className="flex-1">{log.message}</span>
+            <span className="flex-1 whitespace-pre-wrap">{log.message}</span>
           </motion.div>
         ))}
-        <div className="flex gap-4 mt-1">
-          <span className="text-ame-accent">{'>'}</span>
-          <input 
-            className="bg-transparent border-none outline-none text-white w-full"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleCommand}
-            autoFocus
-          />
+      </div>
+
+      {/* Meta Search Suggestions */}
+      <AnimatePresence>
+        {searchResults.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="absolute bottom-12 left-2 right-2 bg-slate-900 border border-ame-accent/30 p-1 rounded-sm z-50 shadow-2xl backdrop-blur-xl"
+          >
+            <div className="px-2 py-1 border-b border-ame-border mb-1">
+              <span className="text-[8px] text-slate-500 uppercase font-bold">Meta-Search Suggestions</span>
+            </div>
+            {searchResults.map(item => (
+              <div 
+                key={item.id} 
+                className="flex items-center justify-between px-2 py-1 hover:bg-ame-accent/10 cursor-pointer group/item"
+                onClick={() => setInput(item.name)}
+              >
+                <div className="flex items-center gap-3">
+                   <span className="text-[9px] text-ame-accent font-bold">[{item.type}]</span>
+                   <span className="text-[10px] text-slate-200">{item.name}</span>
+                </div>
+                <span className="text-[8px] text-slate-600 opacity-0 group-hover/item:opacity-100 uppercase">Click to Autofill</span>
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Input Tray */}
+      <div className="absolute bottom-0 left-0 right-0 p-2 bg-black border-t border-ame-border flex items-center gap-3 group">
+        <div className="flex items-center gap-1">
+          <span className="text-ame-accent font-bold font-mono text-xs">{input.startsWith('/') ? 'λ' : '>'}</span>
+          {input.startsWith('/') && <div className="w-1 h-3 bg-ame-accent animate-pulse" />}
+        </div>
+        <input 
+          className="bg-transparent border-none outline-none text-white w-full font-mono text-xs placeholder:text-slate-800"
+          placeholder="Type to search nodes, assets... or / to execute command"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleCommand}
+          autoFocus
+        />
+        <div className="flex items-center gap-2 px-2 bg-slate-900 border border-ame-border font-mono text-[8px] text-slate-600 uppercase">
+          Ins
         </div>
       </div>
     </div>

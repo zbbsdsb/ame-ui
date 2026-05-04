@@ -39,6 +39,11 @@ interface EngineState {
   updateMcap: (updates: Partial<EngineState['mcap']>) => void;
   toggleRecording: () => void;
   
+  // Meta Search & Commands
+  assets: Array<{ id: string, name: string, type: 'MESH' | 'TEXTURE' | 'SCRIPT', status: 'LOADED' | 'REMOTE' }>;
+  commandHistory: string[];
+  processCommand: (input: string) => void;
+  
   // Scene
   nodes: SceneNode[];
   selectedNodeId: string | null;
@@ -134,6 +139,72 @@ const INITIAL_NODES: SceneNode[] = [
 ];
 
 export const useEngineStore = create<EngineState>((set) => ({
+  // Meta Actions
+  assets: [
+    { id: 'as_001', name: 'CYBER_CORE_MESH', type: 'MESH', status: 'LOADED' },
+    { id: 'as_002', name: 'NEON_EMISSIVE_TEX', type: 'TEXTURE', status: 'LOADED' },
+    { id: 'as_003', name: 'ROUTING_HANDLER_JS', type: 'SCRIPT', status: 'REMOTE' },
+  ],
+  commandHistory: [],
+  processCommand: (input: string) => {
+    const { addLog, nodes, models, sensors, assets, triggerInference, selectNode } = useEngineStore.getState();
+    const cleanInput = input.trim().toLowerCase();
+    
+    // @ts-ignore - access internal set
+    const set = useEngineStore.setState;
+
+    set(state => ({ commandHistory: [input, ...state.commandHistory].slice(0, 50) }));
+
+    if (!input) return;
+
+    // Meta-Search Logic
+    if (cleanInput.length > 1 && !cleanInput.startsWith('/')) {
+      const results = [
+        ...nodes.map(n => ({ type: 'NODE', name: n.name, id: n.id })),
+        ...models.map(m => ({ type: 'MODEL', name: m.name, id: m.id })),
+        ...assets.map(a => ({ type: 'ASSET', name: a.name, id: a.id })),
+        ...sensors.map(s => ({ type: 'SENSOR', name: s.topic, id: s.topic }))
+      ].filter(item => item.name.toLowerCase().includes(cleanInput));
+
+      if (results.length > 0) {
+        addLog({
+          source: 'META_SEARCH',
+          level: 'INFO',
+          message: `Found ${results.length} matches: ${results.map(r => r.name).join(', ')}`
+        });
+        return;
+      }
+    }
+
+    // Command Logic
+    if (input.startsWith('/')) {
+      const parts = input.slice(1).split(' ');
+      const cmd = parts[0];
+      const args = parts.slice(1);
+
+      switch(cmd.toLowerCase()) {
+        case 'select':
+          const target = nodes.find(n => n.name.toLowerCase().includes(args[0]?.toLowerCase()));
+          if (target) {
+            selectNode(target.id);
+            addLog({ source: 'CLI', level: 'OK', message: `SELECTED_NODE: ${target.name}` });
+          }
+          break;
+        case 'infer':
+          const mId = args[0] || 'vllm-llama3';
+          const nId = args[1] || useEngineStore.getState().selectedNodeId;
+          triggerInference(mId, nId);
+          break;
+        case 'clear':
+          useEngineStore.getState().clearLogs();
+          break;
+        default:
+          addLog({ source: 'CLI', level: 'ERR', message: `UNKNOWN_COMMAND: ${cmd}` });
+      }
+    } else {
+      addLog({ source: 'USER', level: 'INFO', message: input });
+    }
+  },
   nodes: INITIAL_NODES,
   selectedNodeId: 'aeid.3dgs.01',
   selectNode: (id) => set({ selectedNodeId: id }),
