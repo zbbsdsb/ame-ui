@@ -37,17 +37,25 @@ export const Console = () => {
           </div>
         }
       />
-      <div className="flex-1 p-2 font-mono text-[10px] overflow-y-auto leading-relaxed text-slate-300 no-scrollbar pb-12">
-        {logs.map((log) => (
+      <div className="flex-1 p-2 font-mono text-[10px] overflow-y-auto leading-relaxed text-slate-300 no-scrollbar pb-12 relative">
+        {/* Scanning Bar Effect */}
+        <motion.div 
+          className="absolute inset-x-0 h-px bg-ame-accent/20 z-0 pointer-events-none"
+          animate={{ top: ['0%', '100%'] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+        />
+
+        {logs.map((log, index) => (
           <motion.div 
             key={log.id} 
-            initial={{ opacity: 0, x: -5 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex gap-4 group/log mb-0.5"
+            initial={{ opacity: 0, x: -10, filter: 'blur(2px)' }}
+            animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="flex gap-4 group/log mb-0.5 relative z-10"
           >
-            <span className="text-slate-600">[{log.timestamp}]</span>
+            <span className="text-slate-600 shrink-0">[{log.timestamp}]</span>
             <span className={`
-              font-bold ${log.level === 'ERR' ? 'text-red-500' : log.level === 'WNG' ? 'text-yellow-500' : 'text-ame-accent'}
+              font-bold shrink-0 ${log.level === 'ERR' ? 'text-red-500' : log.level === 'WNG' ? 'text-yellow-500' : 'text-ame-accent'}
             `}>{log.source}:</span>
             <span className="flex-1 whitespace-pre-wrap">{log.message}</span>
           </motion.div>

@@ -16,7 +16,7 @@ import { Viewport } from './components/Viewport';
 import { BottomPanel } from './components/BottomPanel';
 import { Inspector } from './components/Inspector';
 
-import { GitBranch } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useEngineStore } from './store/useEngineStore';
 import { StudioCanvas } from './components/StudioCanvas';
 
@@ -33,67 +33,115 @@ export default function App() {
       </div>
 
       <div className="relative z-10 flex flex-col h-full">
-        <TopBar />
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <TopBar />
+        </motion.div>
         
         <div className="flex-1 flex overflow-hidden relative">
-          {isStudioExpanded ? (
-            <div className="absolute inset-0 z-50 flex flex-col bg-black">
-              <div className="h-10 border-b border-ame-border flex items-center px-4 justify-between bg-black/80 backdrop-blur-md">
-                <div className="flex items-center gap-3">
-                  <GitBranch className="w-4 h-4 text-ame-accent" />
-                  <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white">Workflow Studio / Studio_Core_01</span>
+          <AnimatePresence mode="wait">
+            {isStudioExpanded && (
+              <motion.div 
+                key="studio"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="absolute inset-0 z-50 flex flex-col bg-black"
+              >
+                <div className="h-10 border-b border-ame-border flex items-center px-4 justify-between bg-black/80 backdrop-blur-md">
+                  <div className="flex items-center gap-3">
+                    <GitBranch className="w-4 h-4 text-ame-accent" />
+                    <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white">Workflow Studio / Studio_Core_01</span>
+                  </div>
+                  <button 
+                    onClick={() => setStudioExpanded(false)}
+                    className="px-3 py-1 bg-ame-accent text-black font-mono text-[9px] font-bold uppercase hover:bg-white transition-colors"
+                  >
+                    Exit Studio
+                  </button>
                 </div>
-                <button 
-                  onClick={() => setStudioExpanded(false)}
-                  className="px-3 py-1 bg-ame-accent text-black font-mono text-[9px] font-bold uppercase hover:bg-white transition-colors"
-                >
-                  Exit Studio
-                </button>
-              </div>
-              <div className="flex-1">
-                <StudioCanvas />
-              </div>
-            </div>
-          ) : null}
+                <div className="flex-1">
+                  <StudioCanvas />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          <PanelGroup orientation="horizontal">
-          
-          {/* Left Panel: Scene Tree */}
-          <Panel defaultSize={20} minSize={10} className="border-r border-ame-border">
-            <SceneTree />
-          </Panel>
-          
-          <ResizeHandle direction="horizontal" />
-          
-          {/* Main Area: Viewport + Console */}
-          <Panel defaultSize={55} minSize={30}>
-            <PanelGroup orientation="vertical">
-              
-              {/* Main Viewport */}
-              <Panel defaultSize={70} minSize={20} className="border-b border-ame-border">
-                <Viewport />
+          <motion.div 
+            className="flex-1 flex"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 1 }}
+          >
+            <PanelGroup orientation="horizontal">
+              {/* Left Panel: Scene Tree */}
+              <Panel defaultSize={20} minSize={10} className="border-r border-ame-border">
+                <motion.div 
+                  className="h-full"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <SceneTree />
+                </motion.div>
               </Panel>
               
-              <ResizeHandle direction="vertical" />
+              <ResizeHandle direction="horizontal" />
               
-              {/* Bottom Tray */}
-              <Panel defaultSize={30} minSize={10}>
-                <BottomPanel />
+              {/* Main Area: Viewport + Console */}
+              <Panel defaultSize={55} minSize={30}>
+                <PanelGroup orientation="vertical">
+                  
+                  {/* Main Viewport */}
+                  <Panel defaultSize={70} minSize={20} className="border-b border-ame-border">
+                    <motion.div 
+                      className="h-full"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.6, duration: 1 }}
+                    >
+                      <Viewport />
+                    </motion.div>
+                  </Panel>
+                  
+                  <ResizeHandle direction="vertical" />
+                  
+                  {/* Bottom Tray */}
+                  <Panel defaultSize={30} minSize={10}>
+                    <motion.div 
+                      className="h-full"
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.8, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <BottomPanel />
+                    </motion.div>
+                  </Panel>
+                </PanelGroup>
+              </Panel>
+              
+              <ResizeHandle direction="horizontal" />
+              
+              {/* Right Panel: Inspector */}
+              <Panel defaultSize={25} minSize={15} className="border-l border-ame-border">
+                <motion.div 
+                  className="h-full"
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Inspector />
+                </motion.div>
               </Panel>
             </PanelGroup>
-          </Panel>
-          
-          <ResizeHandle direction="horizontal" />
-          
-          {/* Right Panel: Inspector */}
-          <Panel defaultSize={25} minSize={15} className="border-l border-ame-border">
-            <Inspector />
-          </Panel>
-          
-        </PanelGroup>
+          </motion.div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 }
 

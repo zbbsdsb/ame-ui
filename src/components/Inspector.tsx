@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { Settings2, Activity, Database, Zap } from 'lucide-react';
 import { PanelHeader } from './PanelHeader';
 import { useEngineStore } from '../store/useEngineStore';
@@ -35,7 +36,12 @@ export const Inspector = () => {
       <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
         
         {/* Metaclass Header */}
-        <div className="px-3 py-4 border-b border-ame-border bg-slate-900/10">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          key={selectedNode.id + '_header'}
+          className="px-3 py-4 border-b border-ame-border bg-slate-900/10"
+        >
           <div className="ame-label mb-1">Entity Identity (AEID)</div>
           <div className="font-mono text-xs text-white mb-3 break-all">{selectedNode.id}</div>
           <div className="flex gap-2">
@@ -45,15 +51,21 @@ export const Inspector = () => {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Facet Sections */}
-        {selectedNode.facets.map((facet) => (
-          <FacetPanel 
-            key={facet.type} 
-            facet={facet} 
-            onUpdate={(field, val) => updateFacetData(facet.type, field, val)} 
-          />
+        {selectedNode.facets.map((facet, index) => (
+          <motion.div
+            key={selectedNode.id + facet.type}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.05 }}
+          >
+            <FacetPanel 
+              facet={facet} 
+              onUpdate={(field, val) => updateFacetData(facet.type, field, val)} 
+            />
+          </motion.div>
         ))}
         
       </div>

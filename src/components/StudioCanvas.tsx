@@ -216,6 +216,24 @@ export const StudioCanvas = () => {
                 cornerRadius={2}
                 shadowBlur={selectedId === node.id ? 20 : 0}
                 shadowColor="#A7F3D033"
+                opacity={0}
+                onMouseEnter={(e) => {
+                  const stage = e.target.getStage();
+                  if (stage) stage.container().style.cursor = 'move';
+                }}
+                onMouseLeave={(e) => {
+                  const stage = e.target.getStage();
+                  if (stage) stage.container().style.cursor = 'default';
+                }}
+                ref={(nodeRef) => {
+                  if (nodeRef && nodeRef.opacity() === 0) {
+                    nodeRef.to({
+                      opacity: 1,
+                      duration: 0.5,
+                      easing: (t: any) => t * (2 - t)
+                    });
+                  }
+                }}
               />
               
               {/* Header */}
