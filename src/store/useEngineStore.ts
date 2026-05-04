@@ -53,6 +53,7 @@ interface EngineState {
   updateWorkflowNode: (id: string, updates: Partial<WorkflowNode>) => void;
   connectPorts: (fromNodeId: string, fromPortId: string, toNodeId: string, toPortId: string) => void;
   removeWorkflowEdge: (id: string) => void;
+  removeWorkflowNode: (id: string) => void;
   
   // Scene
   nodes: SceneNode[];
@@ -394,5 +395,9 @@ export const useEngineStore = create<EngineState>((set) => ({
   })),
   removeWorkflowEdge: (id) => set((state) => ({
     workflowEdges: state.workflowEdges.filter(e => e.id !== id)
+  })),
+  removeWorkflowNode: (id) => set((state) => ({
+    workflowNodes: state.workflowNodes.filter(n => n.id !== id),
+    workflowEdges: state.workflowEdges.filter(e => e.fromNodeId !== id && e.toNodeId !== id)
   })),
 }));

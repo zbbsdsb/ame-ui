@@ -9,10 +9,38 @@ const PORT_RADIUS = 5;
 const HEADER_HEIGHT = 24;
 
 export const StudioCanvas = () => {
-  const { workflowNodes, workflowEdges, updateWorkflowNode, connectPorts, isStudioExpanded, setStudioExpanded, addWorkflowNode } = useEngineStore();
+  const { 
+    workflowNodes, 
+    workflowEdges, 
+    updateWorkflowNode, 
+    connectPorts, 
+    removeWorkflowEdge, 
+    removeWorkflowNode,
+    isStudioExpanded, 
+    setStudioExpanded, 
+    addWorkflowNode 
+  } = useEngineStore();
+  
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dragEdge, setDragEdge] = useState<{fromNodeId: string, fromPortId: string, x: number, y: number} | null>(null);
+  const [dragEdge, setDragEdge] = useState<{fromNodeId: string, fromPortId: string, startX: number, startY: number, currentX: number, currentY: number} | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hoveredPort, setHoveredPort] = useState<{nodeId: string, portId: string} | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
+        if (selectedId.startsWith('node_')) {
+          removeWorkflowNode(selectedId);
+        } else if (selectedId.startsWith('edge_')) {
+          removeWorkflowEdge(selectedId);
+        }
+        setSelectedId(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedId, removeWorkflowNode, removeWorkflowEdge]);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -29,27 +57,80 @@ export const StudioCanvas = () => {
     }
   }, []);
 
+  const getPortPos = (node: WorkflowNode, portId: string) => {
+    const isInput = node.inputs.find(p => p.id === portId);
+    const index = isInput 
+      ? node.inputs.findIndex(p => p.id === portId)
+      : node.outputs.findIndex(p => p.id === portId);
+    
+    const x = isInput ? node.position.x : node.position.x + NODE_WIDTH;
+    const y = node.position.y + HEADER_HEIGHT + 15 + index * 20;
+    return { x, y };
+  };
+
   const handleDragMove = (id: string, e: any) => {
-    updateWorkflowNode(id, { position: { x: e.target.x(), y: e.target.y() } });
+    const x = Math.round(e.target.x() / 10) * 10;
+    const y = Math.round(e.target.y() / 10) * 10;
+    updateWorkflowNode(id, { position: { x, y } });
   };
 
   const drawBezier = (x1: number, y1: number, x2: number, y2: number) => {
-    const cp1x = x1 + (x2 - x1) / 2;
-    const cp2x = x1 + (x2 - x1) / 2;
-    return `M ${x1} ${y1} C ${cp1x} ${y1} ${cp2x} ${y2} ${x2} ${y2}`;
+    const dx = Math.abs(x2 - x1) * 0.5;
+    return `M ${x1} ${y1} C ${x1 + dx} ${y1} ${x2 - dx} ${y2} ${x2} ${y2}`;
+  };
+
+  const onPortMouseDown = (nodeId: string, portId: string, e: any) => {
+    const node = workflowNodes.find(n => n.id === nodeId);
+    if (!node) return;
+    const pos = getPortPos(node, portId);
+    setDragEdge({
+      fromNodeId: nodeId,
+      fromPortId: portId,
+      startX: pos.x,
+      startY: pos.y,
+      currentX: pos.x,
+      currentY: pos.y
+    });
+  };
+
+  const onMouseMove = (e: any) => {
+    if (dragEdge) {
+      const stage = e.target.getStage();
+      const pointerPos = stage.getPointerPosition();
+      // Adjust for stage transform
+      const x = (pointerPos.x - stage.x()) / stage.scaleX();
+      const y = (pointerPos.y - stage.y()) / stage.scaleY();
+      setDragEdge({ ...dragEdge, currentX: x, currentY: y });
+    }
+  };
+
+  const onMouseUp = () => {
+    if (dragEdge && hoveredPort) {
+      // Connect
+      if (dragEdge.fromNodeId !== hoveredPort.nodeId) {
+        connectPorts(dragEdge.fromNodeId, dragEdge.fromPortId, hoveredPort.nodeId, hoveredPort.portId);
+      }
+    }
+    setDragEdge(null);
   };
 
   return (
-    <div ref={containerRef} className="flex-1 bg-[#050505] relative overflow-hidden">
-      {/* Grid Pattern Background */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none" 
+    <div ref={containerRef} className="flex-1 bg-[#020202] relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5 pointer-events-none" 
         style={{ 
           backgroundImage: 'radial-gradient(circle, #A7F3D0 1px, transparent 1px)',
-          backgroundSize: '40px 40px' 
+          backgroundSize: '20px 20px' 
         }} 
       />
 
-      <Stage width={dimensions.width} height={dimensions.height} draggable>
+      <Stage 
+        width={dimensions.width} 
+        height={dimensions.height} 
+        draggable={!dragEdge}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onClick={() => setSelectedId(null)}
+      >
         <Layer>
           {/* Edges */}
           {workflowEdges.map(edge => {
@@ -57,19 +138,19 @@ export const StudioCanvas = () => {
             const toNode = workflowNodes.find(n => n.id === edge.toNodeId);
             if (!fromNode || !toNode) return null;
 
-            const fromY = fromNode.position.y + HEADER_HEIGHT + 20; // Simplified port pos
-            const toY = toNode.position.y + HEADER_HEIGHT + 20;
+            const fromPos = getPortPos(fromNode, edge.fromPortId);
+            const toPos = getPortPos(toNode, edge.toPortId);
 
             return (
               <Path
                 key={edge.id}
-                data={drawBezier(
-                  fromNode.position.x + NODE_WIDTH, fromY,
-                  toNode.position.x, toY
-                )}
-                stroke="#A7F3D0"
-                strokeWidth={2}
-                opacity={0.5}
+                data={drawBezier(fromPos.x, fromPos.y, toPos.x, toPos.y)}
+                stroke={selectedId === edge.id ? '#A7F3D0' : '#A7F3D066'}
+                strokeWidth={selectedId === edge.id ? 3 : 2}
+                onClick={(e) => {
+                  e.cancelBubble = true;
+                  setSelectedId(edge.id);
+                }}
               />
             );
           })}
@@ -77,7 +158,7 @@ export const StudioCanvas = () => {
           {/* Active Drag Edge */}
           {dragEdge && (
             <Path
-              data={drawBezier(dragEdge.x, dragEdge.y, dragEdge.x + 50, dragEdge.y)} // Dummy
+              data={drawBezier(dragEdge.startX, dragEdge.startY, dragEdge.currentX, dragEdge.currentY)}
               stroke="#A7F3D0"
               strokeWidth={2}
               dash={[5, 5]}
@@ -92,49 +173,71 @@ export const StudioCanvas = () => {
               y={node.position.y}
               draggable
               onDragMove={(e) => handleDragMove(node.id, e)}
+              onClick={(e) => {
+                e.cancelBubble = true;
+                setSelectedId(node.id);
+              }}
             >
               {/* Box */}
               <Rect
                 width={NODE_WIDTH}
-                height={60 + (node.inputs.length + node.outputs.length) * 15}
-                fill="#111"
-                stroke="#333"
-                strokeWidth={1}
-                cornerRadius={4}
-                shadowBlur={10}
-                shadowColor="black"
-                shadowOpacity={0.5}
+                height={60 + Math.max(node.inputs.length, node.outputs.length) * 20}
+                fill="#0a0a0a"
+                stroke={selectedId === node.id ? '#A7F3D0' : '#1e293b'}
+                strokeWidth={selectedId === node.id ? 2 : 1}
+                cornerRadius={2}
+                shadowBlur={selectedId === node.id ? 20 : 0}
+                shadowColor="#A7F3D033"
               />
               
               {/* Header */}
               <Rect
                 width={NODE_WIDTH}
                 height={HEADER_HEIGHT}
-                fill="#1a1a1a"
-                cornerRadius={[4, 4, 0, 0]}
+                fill={selectedId === node.id ? '#A7F3D011' : '#0f172a'}
+                cornerRadius={[2, 2, 0, 0]}
               />
               <Text
                 text={node.name}
-                fontSize={10}
+                fontSize={9}
                 fontStyle="bold"
-                fill="#A7F3D0"
+                fill={selectedId === node.id ? '#A7F3D0' : '#cbd5e1'}
                 x={10}
-                y={7}
+                y={8}
                 fontFamily="monospace"
+                letterSpacing={1}
               />
 
               {/* Ports */}
               {node.inputs.map((p, i) => (
                 <Group key={p.id} y={HEADER_HEIGHT + 15 + i * 20}>
-                  <Circle x={0} radius={PORT_RADIUS} fill="#3b82f6" stroke="#000" strokeWidth={1} />
-                  <Text text={p.name} fontSize={8} fill="#666" x={10} y={-4} fontFamily="monospace" />
+                  <Circle 
+                    x={0} 
+                    radius={PORT_RADIUS} 
+                    fill="#3b82f6" 
+                    stroke="#000" 
+                    strokeWidth={1}
+                    onMouseEnter={() => setHoveredPort({nodeId: node.id, portId: p.id})}
+                    onMouseLeave={() => setHoveredPort(null)}
+                    onMouseDown={(e) => onPortMouseDown(node.id, p.id, e)}
+                  />
+                  <Text text={p.name} fontSize={8} fill="#64748b" x={10} y={-3} fontFamily="monospace" />
                 </Group>
               ))}
 
               {node.outputs.map((p, i) => (
                 <Group key={p.id} y={HEADER_HEIGHT + 15 + i * 20}>
-                  <Circle x={NODE_WIDTH} radius={PORT_RADIUS} fill="#10b981" stroke="#000" strokeWidth={1} />
-                  <Text text={p.name} fontSize={8} fill="#666" x={NODE_WIDTH - 60} y={-4} align="right" width={50} fontFamily="monospace" />
+                  <Circle 
+                    x={NODE_WIDTH} 
+                    radius={PORT_RADIUS} 
+                    fill="#10b981" 
+                    stroke="#000" 
+                    strokeWidth={1}
+                    onMouseEnter={() => setHoveredPort({nodeId: node.id, portId: p.id})}
+                    onMouseLeave={() => setHoveredPort(null)}
+                    onMouseDown={(e) => onPortMouseDown(node.id, p.id, e)}
+                  />
+                  <Text text={p.name} fontSize={8} fill="#64748b" x={NODE_WIDTH - 60} y={-3} align="right" width={50} fontFamily="monospace" />
                 </Group>
               ))}
             </Group>
