@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { SceneNode, LogEntry, EngineStats } from '../types';
+import { SceneNode, LogEntry, EngineStats, WorkflowNode, WorkflowEdge } from '../types';
 
 export interface ModelEntry {
   id: string;
@@ -48,6 +48,8 @@ interface EngineState {
   workflowNodes: WorkflowNode[];
   workflowEdges: WorkflowEdge[];
   isStudioExpanded: boolean;
+  isWorkflowRunning: boolean;
+  setWorkflowRunning: (running: boolean) => void;
   setStudioExpanded: (expanded: boolean) => void;
   addWorkflowNode: (node: Omit<WorkflowNode, 'id'>) => void;
   updateWorkflowNode: (id: string, updates: Partial<WorkflowNode>) => void;
@@ -380,6 +382,8 @@ export const useEngineStore = create<EngineState>((set) => ({
   ],
   workflowEdges: [],
   isStudioExpanded: false,
+  isWorkflowRunning: true,
+  setWorkflowRunning: (running) => set({ isWorkflowRunning: running }),
   setStudioExpanded: (expanded) => set({ isStudioExpanded: expanded }),
   addWorkflowNode: (node) => set((state) => ({
     workflowNodes: [...state.workflowNodes, { ...node, id: `node_${Math.random().toString(36).substr(2, 9)}` }]

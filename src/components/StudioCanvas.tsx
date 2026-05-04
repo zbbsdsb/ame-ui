@@ -18,7 +18,9 @@ export const StudioCanvas = () => {
     removeWorkflowNode,
     isStudioExpanded, 
     setStudioExpanded, 
-    addWorkflowNode 
+    addWorkflowNode,
+    isWorkflowRunning,
+    setWorkflowRunning
   } = useEngineStore();
   
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -26,6 +28,20 @@ export const StudioCanvas = () => {
   const [dragEdge, setDragEdge] = useState<{fromNodeId: string, fromPortId: string, startX: number, startY: number, currentX: number, currentY: number} | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredPort, setHoveredPort] = useState<{nodeId: string, portId: string} | null>(null);
+  const [dashOffset, setDashOffset] = useState(0);
+
+  // Animation Loop for Flow
+  useEffect(() => {
+    let animId: number;
+    const animate = () => {
+      if (isWorkflowRunning) {
+        setDashOffset(prev => (prev + 1) % 40);
+      }
+      animId = requestAnimationFrame(animate);
+    };
+    animId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animId);
+  }, [isWorkflowRunning]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -142,16 +158,28 @@ export const StudioCanvas = () => {
             const toPos = getPortPos(toNode, edge.toPortId);
 
             return (
-              <Path
-                key={edge.id}
-                data={drawBezier(fromPos.x, fromPos.y, toPos.x, toPos.y)}
-                stroke={selectedId === edge.id ? '#A7F3D0' : '#A7F3D066'}
-                strokeWidth={selectedId === edge.id ? 3 : 2}
-                onClick={(e) => {
-                  e.cancelBubble = true;
-                  setSelectedId(edge.id);
-                }}
-              />
+              <Group key={edge.id}>
+                <Path
+                  data={drawBezier(fromPos.x, fromPos.y, toPos.x, toPos.y)}
+                  stroke={selectedId === edge.id ? '#A7F3D0' : '#A7F3D033'}
+                  strokeWidth={2}
+                  onClick={(e) => {
+                    e.cancelBubble = true;
+                    setSelectedId(edge.id);
+                  }}
+                />
+                {isWorkflowRunning && (
+                  <Path
+                    data={drawBezier(fromPos.x, fromPos.y, toPos.x, toPos.y)}
+                    stroke="#A7F3D0"
+                    strokeWidth={2}
+                    dash={[4, 16]}
+                    dashOffset={-dashOffset}
+                    opacity={0.8}
+                    listening={false}
+                  />
+                )}
+              </Group>
             );
           })}
 
@@ -268,9 +296,24 @@ export const StudioCanvas = () => {
             Expand Studio
           </button>
         )}
-        <div className="bg-black/60 px-3 py-1 border border-ame-border text-[9px] text-slate-500 font-mono flex items-center gap-2 uppercase">
-          Workflow Status: <span className="text-emerald-500">Active</span>
+        <div className="bg-black/60 px-3 py-1 border border-ame-border text-[9px] text-slate-500 font-mono flex items-center gap-3 uppercase">
+          Workflow Status: 
+          <span className={`font-bold ${isWorkflowRunning ? 'text-emerald-500' : 'text-amber-500'}`}>
+            {isWorkflowRunning ? 'Streaming' : 'Paused'}
+          </span>
+          <button 
+            onClick={() => setWorkflowRunning(!isWorkflowRunning)}
+            className="ml-2 px-2 py-0.5 border border-ame-border hover:border-white transition-colors bg-black"
+          >
+            {isWorkflowRunning ? 'STOP' : 'RUN'}
+          </button>
         </div>
+      </div>
+
+      {/* Mini Legend */}
+      <div className="absolute bottom-4 left-4 flex gap-4 text-[8px] font-mono text-slate-600 uppercase tracking-widest">
+        <div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Input</div>
+        <div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Output</div>
       </div>
     </div>
   );
