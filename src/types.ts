@@ -14,6 +14,7 @@ export interface SceneNode {
   facets: Facet[];
 }
 
+/** Represents a connection point on a workflow node */
 export interface WorkflowPort {
   id: string;
   name: string;
@@ -21,6 +22,7 @@ export interface WorkflowPort {
   dataType: 'DATA' | 'SIGNAL' | 'MODEL' | 'SENSOR';
 }
 
+/** Represents a functional block in the Workflow Studio */
 export interface WorkflowNode {
   id: string;
   type: 'SENSOR_BRIDGE' | 'AI_INFERENCE' | 'LOGIC' | 'OUT_USD';
@@ -31,6 +33,7 @@ export interface WorkflowNode {
   data: Record<string, any>;
 }
 
+/** Represents a data/signal path between two nodes */
 export interface WorkflowEdge {
   id: string;
   fromNodeId: string;

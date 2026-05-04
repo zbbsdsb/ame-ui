@@ -24,6 +24,10 @@ AME UI prioritizes data visibility and operational velocity over "breathing room
 ## 🛠 Technical Stack
 - **Framework**: React 19 + TypeScript
 - **Styling**: Tailwind CSS 4.0
+- **State Management**: Zustand
+- **Graphics & Workflow**: 
+  - `motion`: Animation and fluid UI transitions.
+  - `konva` / `react-konva`: Canvas-based engine for high-performance node editors.
 - **Layout**: `react-resizable-panels` for flexible workstation configuration.
 - **Icons**: Lucide React (Industrial subset)
 
@@ -33,22 +37,23 @@ AME UI prioritizes data visibility and operational velocity over "breathing room
 
 | Dimension | Specification |
 | :--- | :--- |
-| **Grid** | 8px stepping system |
+| **Grid** | 4px/8px stepping system |
 | **Typography** | Sans: Inter / Mono: JetBrains Mono |
-| **Colors** | BG: #000000 / Border: #1E293B / Accent: #DEFF9A |
-| **Radius** | 0px (Strictly prohibited) |
+| **Colors** | BG: #000000 / Border: #1E293B / Accent: #A7F3D0 (AME Accent) |
+| **Radius** | 0px - 4px (Soft industrial) |
 | **Borders** | 1px Solid |
 
 ---
 
 ## 🧩 Module Architecture
 
-The interface is divided into five primary functional slots:
-1. **TopBar**: Global engine status and project metadata.
-2. **SceneTree**: Hierarchical visibility and object management.
-3. **Viewport**: The primary 3D rendering canvas with HUD overlays.
-4. **Inspector**: High-density parameter tuning and manifest checking.
-5. **Console**: Real-time VULKAN/3DGS logs and command-line input.
+The interface is divided into functional zones:
+1. **TopBar**: Global engine status, Project metadata, and Core Mode switching.
+2. **SceneTree**: Hierarchical USD-compatible object tree with real-time sync indicators.
+3. **Viewport**: 3D rendering zone with interactive HUD, 3D Gizmos (T/R/S), and MCAP recording overlay.
+4. **Inspector**: Multi-facet property editor (Visual, Physics, Sensor, Provenance).
+5. **Meta Console**: Command-line interface with meta-search capabilities for fast node/asset discovery.
+6. **Workflow Studio**: Advanced canvas-based node editor for designing data pipelines and AI logic.
 
 ---
 
