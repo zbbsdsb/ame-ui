@@ -179,6 +179,30 @@ export const StudioCanvas = () => {
                     listening={false}
                   />
                 )}
+                {isWorkflowRunning && [0, 0.33, 0.66].map((offset, idx) => (
+                  <Circle 
+                    key={idx}
+                    radius={2}
+                    fill="#fff"
+                    shadowBlur={5}
+                    shadowColor="#A7F3D0"
+                    opacity={0.4}
+                    listening={false}
+                    ref={(circleRef) => {
+                      if (circleRef) {
+                        const pathData = drawBezier(fromPos.x, fromPos.y, toPos.x, toPos.y);
+                        // progress tied to dashOffset plus per-packet offset
+                        const progress = (((dashOffset + (offset * 40)) * 2) % 100) / 100;
+                        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        path.setAttribute('d', pathData);
+                        const len = path.getTotalLength();
+                        const p = path.getPointAtLength(len * progress);
+                        circleRef.position({ x: p.x, y: p.y });
+                        circleRef.opacity(0.1 + Math.sin(progress * Math.PI) * 0.5);
+                      }
+                    }}
+                  />
+                ))}
               </Group>
             );
           })}

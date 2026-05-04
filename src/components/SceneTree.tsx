@@ -20,16 +20,30 @@ export const SceneTree = () => {
           return (
             <motion.div 
               key={node.id} 
-              initial={{ opacity: 0, x: -5 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
+              initial={{ opacity: 0, x: -10, filter: 'blur(4px)' }}
+              animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+              transition={{ 
+                duration: 0.6,
+                delay: index * 0.08,
+                ease: [0.16, 1, 0.3, 1]
+              }}
+              whileHover={{ x: 2, backgroundColor: 'rgba(167, 243, 208, 0.05)' }}
               onClick={() => selectNode(node.id)}
               className={`
-                py-1.5 border-b border-ame-border/30 cursor-pointer hover:bg-slate-900/60 transition-colors flex items-center justify-between group relative overflow-hidden
-                ${isSelected ? 'text-white font-bold bg-slate-900/60' : 'text-slate-400'}
-                ${depth === 0 ? 'px-3 bg-slate-900/40 text-ame-accent font-bold' : 'px-6'}
+                py-2 border-b border-ame-border/20 cursor-pointer transition-all flex items-center justify-between group relative overflow-hidden
+                ${isSelected ? 'text-white font-bold bg-ame-accent/5' : 'text-slate-400'}
+                ${depth === 0 ? 'px-3 bg-slate-900/10 text-ame-accent font-bold' : 'px-6'}
               `}
             >
+              {/* Scanline for selected */}
+              {isSelected && (
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-ame-accent/10 to-transparent w-1/3 z-0"
+                  animate={{ left: ['-30%', '110%'] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                />
+              )}
+
               {isTarget && (
                  <motion.div 
                    layoutId="flow-line"
@@ -39,18 +53,20 @@ export const SceneTree = () => {
                  />
               )}
               <div className="flex items-center">
-                <span className="text-slate-600 mr-2">{node.parentId ? '∟' : '●'}</span>
-                <span>{node.name}</span>
+                <span className="text-slate-600 mr-2 font-mono">{node.parentId ? '├' : '●'}</span>
+                <span className="tracking-tight">{node.name}</span>
               </div>
-              <div className="flex gap-1.5 px-2">
+              <div className="flex gap-2 px-2 relative z-10">
                 {node.facets.map(f => (
-                  <div 
+                  <motion.div 
                     key={f.type} 
                     title={`${f.type}: ${f.status}`}
-                    className={`w-1 h-1 rounded-full ${
+                    animate={f.status !== 'SYNCHRONIZED' ? { opacity: [0.2, 0.8, 0.2] } : {}}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    className={`w-1.5 h-1.5 rounded-full ${
                       f.status === 'SYNCHRONIZED' ? 'bg-ame-accent' : 
-                      f.status === 'DIRTY' ? 'bg-yellow-500' : 'bg-red-500'
-                    } opacity-20 group-hover:opacity-80 transition-opacity shadow-[0_0_8px_currentColor]`} 
+                      f.status === 'DIRTY' ? 'bg-amber-500' : 'bg-red-500'
+                    } opacity-20 group-hover:opacity-100 transition-opacity shadow-[0_0_8px_currentColor]`} 
                   />
                 ))}
               </div>

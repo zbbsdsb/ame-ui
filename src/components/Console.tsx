@@ -38,6 +38,20 @@ export const Console = () => {
         }
       />
       <div className="flex-1 p-2 font-mono text-[10px] overflow-y-auto leading-relaxed text-slate-300 no-scrollbar pb-12 relative">
+        {/* Hex Data Stream Background */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.03] overflow-hidden flex flex-wrap content-start">
+          {[...Array(20)].map((_, i) => (
+            <motion.div 
+              key={i}
+              className="whitespace-nowrap text-[8px] tracking-widest text-ame-accent"
+              animate={{ x: [0, -100] }}
+              transition={{ duration: 10 + i * 2, repeat: Infinity, ease: 'linear' }}
+            >
+              {[...Array(50)].map(() => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')).join(' ')}
+            </motion.div>
+          ))}
+        </div>
+
         {/* Scanning Bar Effect */}
         <motion.div 
           className="absolute inset-x-0 h-px bg-ame-accent/20 z-0 pointer-events-none"

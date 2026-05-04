@@ -20,6 +20,18 @@ export const Viewport = () => {
 
   return (
     <div className="relative h-full bg-[#020202] overflow-hidden group">
+      {/* Scanning Bar Effect (HUD level) */}
+      <motion.div 
+        className="absolute inset-0 pointer-events-none z-40 opacity-[0.03]"
+        animate={{ 
+          background: [
+            'linear-gradient(to bottom, transparent 0%, rgba(167, 243, 208, 0.5) 50%, transparent 100%)',
+            'linear-gradient(to bottom, transparent 100%, rgba(167, 243, 208, 0.5) 150%, transparent 200%)'
+          ]
+        }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+      />
+
       {/* Gizmo Overlay */}
       <Gizmo />
 
