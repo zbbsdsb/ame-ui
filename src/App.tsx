@@ -19,17 +19,33 @@ import { Inspector } from './components/Inspector';
 import { motion, AnimatePresence } from 'motion/react';
 import { useEngineStore } from './store/useEngineStore';
 import { StudioCanvas } from './components/StudioCanvas';
+import { GitBranch } from 'lucide-react';
 
 export default function App() {
   const { isStudioExpanded, setStudioExpanded } = useEngineStore();
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-black selection:bg-ame-accent selection:text-black font-sans relative overflow-hidden">
+    <div className="h-screen w-screen flex flex-col bg-ame-bg text-ame-text selection:bg-ame-accent selection:text-ame-bg font-sans relative overflow-hidden">
       {/* Aesthetic Overlays */}
       <div className="ame-grain" />
       <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-ame-accent/20 blur-[150px] rounded-full" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-ame-accent/20 blur-[150px] rounded-full transition-colors duration-1000" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 blur-[150px] rounded-full" />
+      </div>
+
+      <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.03] mix-blend-overlay" 
+        style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }} 
+      />
+      
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_#111_0%,_#000_100%)] opacity-80" />
+        <div className="absolute inset-0 opacity-20" 
+          style={{ 
+            backgroundImage: 'linear-gradient(var(--ame-accent) 1px, transparent 1px), linear-gradient(90deg, var(--ame-accent) 1px, transparent 1px)',
+            backgroundSize: '100px 100px',
+            maskImage: 'radial-gradient(circle at 50% 50%, black, transparent)'
+          }} 
+        />
       </div>
 
       <div className="relative z-10 flex flex-col h-full">

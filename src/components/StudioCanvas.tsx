@@ -20,8 +20,21 @@ export const StudioCanvas = () => {
     setStudioExpanded, 
     addWorkflowNode,
     isWorkflowRunning,
-    setWorkflowRunning
+    setWorkflowRunning,
+    theme
   } = useEngineStore();
+
+  const themeColors = {
+    EMERALD: '#A7F3D0',
+    SPACE_BLUE: '#38BDF8',
+    ONIX: '#94A3B8',
+    SNOW: '#0F172A',
+    ROSE_RED: '#F43F5E',
+    OASIS_GREEN: '#10B981',
+  };
+
+  const accentColor = themeColors[theme] || themeColors.EMERALD;
+  const isSnow = theme === 'SNOW';
   
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
@@ -131,10 +144,10 @@ export const StudioCanvas = () => {
   };
 
   return (
-    <div ref={containerRef} className="flex-1 bg-[#020202] relative overflow-hidden">
+    <div ref={containerRef} className="flex-1 bg-ame-bg relative overflow-hidden transition-colors duration-500">
       <div className="absolute inset-0 opacity-5 pointer-events-none" 
         style={{ 
-          backgroundImage: 'radial-gradient(circle, #A7F3D0 1px, transparent 1px)',
+          backgroundImage: `radial-gradient(circle, ${accentColor} 1px, transparent 1px)`,
           backgroundSize: '20px 20px' 
         }} 
       />
@@ -161,7 +174,7 @@ export const StudioCanvas = () => {
               <Group key={edge.id}>
                 <Path
                   data={drawBezier(fromPos.x, fromPos.y, toPos.x, toPos.y)}
-                  stroke={selectedId === edge.id ? '#A7F3D0' : '#A7F3D033'}
+                  stroke={selectedId === edge.id ? accentColor : `${accentColor}33`}
                   strokeWidth={2}
                   onClick={(e) => {
                     e.cancelBubble = true;
@@ -171,7 +184,7 @@ export const StudioCanvas = () => {
                 {isWorkflowRunning && (
                   <Path
                     data={drawBezier(fromPos.x, fromPos.y, toPos.x, toPos.y)}
-                    stroke="#A7F3D0"
+                    stroke={accentColor}
                     strokeWidth={2}
                     dash={[4, 16]}
                     dashOffset={-dashOffset}
@@ -183,9 +196,9 @@ export const StudioCanvas = () => {
                   <Circle 
                     key={idx}
                     radius={2}
-                    fill="#fff"
+                    fill={isSnow ? accentColor : "#fff"}
                     shadowBlur={5}
-                    shadowColor="#A7F3D0"
+                    shadowColor={accentColor}
                     opacity={0.4}
                     listening={false}
                     ref={(circleRef) => {
@@ -211,7 +224,7 @@ export const StudioCanvas = () => {
           {dragEdge && (
             <Path
               data={drawBezier(dragEdge.startX, dragEdge.startY, dragEdge.currentX, dragEdge.currentY)}
-              stroke="#A7F3D0"
+              stroke={accentColor}
               strokeWidth={2}
               dash={[5, 5]}
             />
@@ -234,12 +247,12 @@ export const StudioCanvas = () => {
               <Rect
                 width={NODE_WIDTH}
                 height={60 + Math.max(node.inputs.length, node.outputs.length) * 20}
-                fill="#0a0a0a"
-                stroke={selectedId === node.id ? '#A7F3D0' : '#1e293b'}
+                fill={isSnow ? "#f1f5f9" : "#0a0a0a"}
+                stroke={selectedId === node.id ? accentColor : (isSnow ? '#e2e8f0' : '#1e293b')}
                 strokeWidth={selectedId === node.id ? 2 : 1}
                 cornerRadius={2}
                 shadowBlur={selectedId === node.id ? 20 : 0}
-                shadowColor="#A7F3D033"
+                shadowColor={`${accentColor}33`}
                 opacity={0}
                 onMouseEnter={(e) => {
                   const stage = e.target.getStage();
@@ -264,14 +277,14 @@ export const StudioCanvas = () => {
               <Rect
                 width={NODE_WIDTH}
                 height={HEADER_HEIGHT}
-                fill={selectedId === node.id ? '#A7F3D011' : '#0f172a'}
+                fill={selectedId === node.id ? `${accentColor}22` : (isSnow ? '#e2e8f0' : '#0f172a')}
                 cornerRadius={[2, 2, 0, 0]}
               />
               <Text
                 text={node.name}
                 fontSize={9}
                 fontStyle="bold"
-                fill={selectedId === node.id ? '#A7F3D0' : '#cbd5e1'}
+                fill={selectedId === node.id ? accentColor : (isSnow ? '#0f172a' : '#cbd5e1')}
                 x={10}
                 y={8}
                 fontFamily="monospace"
@@ -326,26 +339,26 @@ export const StudioCanvas = () => {
             outputs: [{ id: nanoid(), name: 'OUT', type: 'OUT', dataType: 'DATA' }],
             data: {}
           })}
-          className="bg-black/80 border border-ame-accent/30 px-3 py-1 text-[10px] text-ame-accent font-bold font-mono hover:bg-ame-accent hover:text-black transition-colors uppercase"
+          className="bg-ame-panel-bg/80 border border-ame-accent/30 px-3 py-1 text-[10px] text-ame-accent font-bold font-mono hover:bg-ame-accent hover:text-ame-bg transition-colors uppercase"
         >
           + Add Node
         </button>
         {!isStudioExpanded && (
           <button 
             onClick={() => setStudioExpanded(true)}
-            className="bg-black/80 border border-ame-border px-3 py-1 text-[10px] text-white font-bold font-mono hover:bg-white hover:text-black transition-colors uppercase"
+            className="bg-ame-panel-bg/80 border border-ame-border px-3 py-1 text-[10px] text-ame-text font-bold font-mono hover:bg-ame-text hover:text-ame-bg transition-colors uppercase"
           >
             Expand Studio
           </button>
         )}
-        <div className="bg-black/60 px-3 py-1 border border-ame-border text-[9px] text-slate-500 font-mono flex items-center gap-3 uppercase">
+        <div className="bg-ame-panel-bg/60 px-3 py-1 border border-ame-border text-[9px] text-ame-muted font-mono flex items-center gap-3 uppercase">
           Workflow Status: 
           <span className={`font-bold ${isWorkflowRunning ? 'text-emerald-500' : 'text-amber-500'}`}>
             {isWorkflowRunning ? 'Streaming' : 'Paused'}
           </span>
           <button 
             onClick={() => setWorkflowRunning(!isWorkflowRunning)}
-            className="ml-2 px-2 py-0.5 border border-ame-border hover:border-white transition-colors bg-black"
+            className="ml-2 px-2 py-0.5 border border-ame-border hover:border-ame-text transition-colors bg-ame-bg text-ame-text"
           >
             {isWorkflowRunning ? 'STOP' : 'RUN'}
           </button>

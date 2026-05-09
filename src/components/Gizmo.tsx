@@ -3,8 +3,9 @@ import { motion } from 'motion/react';
 import { useEngineStore } from '../store/useEngineStore';
 
 export const Gizmo = () => {
-  const { gizmoMode, nodes, selectedNodeId } = useEngineStore();
+  const { gizmoMode, nodes, selectedNodeId, theme } = useEngineStore();
   const selectedNode = nodes.find(n => n.id === selectedNodeId);
+  const isSnow = theme === 'SNOW';
   
   if (!selectedNode || gizmoMode === 'SELECT') return null;
 
@@ -12,7 +13,7 @@ export const Gizmo = () => {
     x: '#ef4444', // Red
     y: '#22c55e', // Green
     z: '#3b82f6', // Blue
-    center: '#ffffff'
+    center: isSnow ? '#0f172a' : '#ffffff'
   };
 
   return (
@@ -69,7 +70,12 @@ export const Gizmo = () => {
         )}
 
         {/* Center Pivot */}
-        <div className="w-2 h-2 bg-white rounded-full shadow-[0_0_10px_white] z-20" />
+        <div className={`w-2 h-2 rounded-full z-20 transition-colors`} 
+          style={{ 
+            backgroundColor: colors.center,
+            boxShadow: `0 0 10px ${colors.center}` 
+          }} 
+        />
       </div>
       
       {/* Transformation Label */}

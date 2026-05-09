@@ -31,24 +31,24 @@ export const SensorBridgeDashboard = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-black overflow-hidden select-none">
+    <div className="flex-1 flex flex-col min-h-0 bg-ame-bg overflow-hidden select-none">
       <div className="flex border-b border-ame-border h-full">
         
         {/* Left: MCAP Capture Control */}
-        <div className="w-[350px] border-r border-ame-border p-4 flex flex-col bg-slate-900/10">
+        <div className="w-[350px] border-r border-ame-border p-4 flex flex-col bg-ame-panel-bg/10">
           <div className="flex items-center gap-2 mb-6">
             <Database className="w-4 h-4 text-ame-accent" />
             <span className="ame-label">MCAP Container (HDU)</span>
           </div>
 
           <div className="flex-1 space-y-4">
-            <div className={`p-4 border ${mcap.status === 'RECORDING' ? 'border-red-500/50 bg-red-500/5' : 'border-ame-border bg-slate-950'} transition-colors`}>
+            <div className={`p-4 border ${mcap.status === 'RECORDING' ? 'border-red-500/50 bg-red-500/5' : 'border-ame-border bg-ame-panel-bg'} transition-colors`}>
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${mcap.status === 'RECORDING' ? 'bg-red-500 animate-pulse' : 'bg-slate-700'}`} />
-                  <span className="font-mono text-[10px] text-white uppercase tracking-widest">{mcap.status}</span>
+                  <div className={`w-2 h-2 rounded-full ${mcap.status === 'RECORDING' ? 'bg-red-500 animate-pulse' : 'bg-ame-muted/40'}`} />
+                  <span className="font-mono text-[10px] text-ame-text uppercase tracking-widest">{mcap.status}</span>
                 </div>
-                <span className="font-mono text-xl text-white tabular-nums">{formatTime(time)}</span>
+                <span className="font-mono text-xl text-ame-text tabular-nums">{formatTime(time)}</span>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
@@ -78,15 +78,15 @@ export const SensorBridgeDashboard = () => {
               </button>
             </div>
 
-            <div className="p-3 border border-ame-border bg-slate-950/50">
+            <div className="p-3 border border-ame-border bg-ame-panel-bg/50">
               <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-3 h-3 text-slate-500" />
-                <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest">Temporal Sync</span>
+                <Clock className="w-3 h-3 text-current opacity-50" />
+                <span className="text-[9px] text-current opacity-50 uppercase font-bold tracking-widest">Temporal Sync</span>
               </div>
-              <div className="font-mono text-[10px] text-slate-400">
+              <div className="font-mono text-[10px] text-ame-muted">
                 Primary Master: <span className="text-ame-accent">ROS2_PTP_DOMAIN_0</span>
               </div>
-              <div className="font-mono text-[10px] text-slate-400 mt-1">
+              <div className="font-mono text-[10px] text-ame-muted mt-1">
                 Drift: <span className="text-emerald-500">0.002ms</span>
               </div>
             </div>
@@ -94,13 +94,13 @@ export const SensorBridgeDashboard = () => {
         </div>
 
         {/* Right: ROS2 Topic Monitor */}
-        <div className="flex-1 p-4 flex flex-col bg-slate-900/5">
+        <div className="flex-1 p-4 flex flex-col bg-ame-panel-bg/5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Radio className="w-4 h-4 text-ame-accent" />
               <span className="ame-label">DDS / ROS2 Endpoint Monitor</span>
             </div>
-            <div className="flex items-center gap-2 px-2 py-0.5 border border-ame-border bg-black font-mono text-[9px] text-emerald-500">
+            <div className="flex items-center gap-2 px-2 py-0.5 border border-ame-border bg-ame-bg font-mono text-[9px] text-emerald-500">
               <div className="w-1 h-1 rounded-full bg-emerald-500" />
               DOMAIN: 10
             </div>
@@ -130,16 +130,16 @@ export const SensorBridgeDashboard = () => {
 };
 
 const SensorItem = ({ sensor }: { sensor: SensorStream, key?: React.Key }) => (
-  <div className="flex items-center justify-between p-3 bg-slate-900/40 border border-ame-border hover:border-slate-700 transition-colors group">
+  <div className="flex items-center justify-between p-3 bg-ame-panel-bg/40 border border-ame-border hover:border-ame-accent/20 transition-colors group">
     <div className="flex items-center gap-4">
-      <div className={`p-2 bg-black border ${sensor.status === 'ACTIVE' ? 'border-ame-accent/50' : 'border-ame-border'}`}>
-        <Activity className={`w-4 h-4 ${sensor.status === 'ACTIVE' ? 'text-ame-accent' : 'text-slate-600'}`} />
+      <div className={`p-2 bg-ame-bg border ${sensor.status === 'ACTIVE' ? 'border-ame-accent/50' : 'border-ame-border'}`}>
+        <Activity className={`w-4 h-4 ${sensor.status === 'ACTIVE' ? 'text-ame-accent' : 'text-ame-muted'}`} />
       </div>
       <div>
-        <div className="font-mono text-[11px] text-white mb-0.5">{sensor.topic}</div>
+        <div className="font-mono text-[11px] text-ame-text mb-0.5">{sensor.topic}</div>
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[9px] text-slate-500 uppercase">{sensor.type}</span>
-          <span className="font-mono text-[9px] text-slate-500 tracking-tighter">[{sensor.type === 'Camera' ? 'H.264' : 'PointCloud2'}]</span>
+          <span className="font-mono text-[9px] text-ame-muted uppercase">{sensor.type}</span>
+          <span className="font-mono text-[9px] text-ame-muted tracking-tighter">[{sensor.type === 'Camera' ? 'H.264' : 'PointCloud2'}]</span>
         </div>
       </div>
     </div>
@@ -153,7 +153,7 @@ const SensorItem = ({ sensor }: { sensor: SensorStream, key?: React.Key }) => (
         <span className="text-[8px] text-slate-600 font-bold uppercase">Latency</span>
         <span className="font-mono text-[10px] text-slate-300">{sensor.latency} ms</span>
       </div>
-      <div className="w-24 h-6 bg-slate-950 border border-ame-border overflow-hidden relative">
+      <div className="w-24 h-6 bg-ame-bg border border-ame-border overflow-hidden relative">
         <div className="absolute inset-0 flex items-end gap-0.5 px-0.5">
           {[...Array(12)].map((_, i) => (
             <div 

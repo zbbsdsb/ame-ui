@@ -19,14 +19,34 @@ export const Viewport = () => {
   const position = visualFacet?.data.position || [0, 0, 0];
 
   return (
-    <div className="relative h-full bg-[#020202] overflow-hidden group">
+    <div className="relative h-full bg-ame-panel-bg overflow-hidden group">
+      {/* HUD Frame */}
+      <div className="absolute inset-0 pointer-events-none z-30 p-4">
+        {/* Corners */}
+        <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-ame-accent/40 transition-colors" />
+        <div className="absolute top-4 right-4 w-4 h-4 border-t border-r border-ame-accent/40 transition-colors" />
+        <div className="absolute bottom-4 left-4 w-4 h-4 border-b border-l border-ame-accent/40 transition-colors" />
+        <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-ame-accent/40 transition-colors" />
+        
+        {/* Dynamic Coordinates */}
+        <div className="absolute top-6 left-10 flex gap-4 text-[8px] font-mono text-ame-accent/60 uppercase tracking-widest transition-colors">
+          <span>LAT: 35.6895°N</span>
+          <span>LNG: 139.6917°E</span>
+          <span>ALT: 42.0m</span>
+        </div>
+
+        <div className="absolute bottom-6 right-10 text-[8px] font-mono text-ame-accent/60 uppercase tracking-[0.3em] transition-colors">
+          AMAR_ENGINE_SYNC:STABLE_00
+        </div>
+      </div>
+
       {/* Scanning Bar Effect (HUD level) */}
       <motion.div 
         className="absolute inset-0 pointer-events-none z-40 opacity-[0.03]"
         animate={{ 
           background: [
-            'linear-gradient(to bottom, transparent 0%, rgba(167, 243, 208, 0.5) 50%, transparent 100%)',
-            'linear-gradient(to bottom, transparent 100%, rgba(167, 243, 208, 0.5) 150%, transparent 200%)'
+            'linear-gradient(to bottom, transparent 0%, var(--color-ame-accent) 50%, transparent 100%)',
+            'linear-gradient(to bottom, transparent 100%, var(--color-ame-accent) 150%, transparent 200%)'
           ]
         }}
         transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
@@ -63,7 +83,7 @@ export const Viewport = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: [0, 1, 0] }}
                 transition={{ duration: 2, repeat: Infinity, delay: i * 0.4 }}
-                className="absolute w-1 h-1 bg-ame-accent shadow-[0_0_10px_#A7F3D0]"
+                className="absolute w-1 h-1 bg-ame-accent shadow-[0_0_10px_var(--ame-accent)] transition-colors"
                 style={{ 
                   left: `${50 + (Math.random() - 0.5) * 60}%`,
                   top: `${50 + (Math.random() - 0.5) * 60}%`
@@ -79,10 +99,10 @@ export const Viewport = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/60 z-50 flex flex-col items-center justify-center backdrop-blur-sm"
+          className="absolute inset-0 bg-ame-bg/60 z-50 flex flex-col items-center justify-center backdrop-blur-sm transition-colors duration-1000"
         >
-          <div className="w-12 h-12 border-2 border-ame-accent border-t-transparent animate-spin mb-4" />
-          <div className="font-mono text-xs text-ame-accent tracking-widest animate-pulse">
+          <div className="w-12 h-12 border-2 border-ame-accent border-t-transparent animate-spin mb-4 transition-colors" />
+          <div className="font-mono text-xs text-ame-accent tracking-widest animate-pulse transition-colors">
             PATCH SYNCING WORLD IR TO {stats.activeAdapter}...
           </div>
           <div className="mt-2 font-mono text-[8px] text-slate-500 uppercase">
@@ -188,15 +208,15 @@ export const Viewport = () => {
             <div className="flex gap-4">
               <div className="flex flex-col gap-0.5">
                 <span className="text-[9px] text-slate-600 font-bold uppercase">X_COORD</span>
-                <span className="font-mono text-[11px] text-white tabular-nums">{position[0].toFixed(3)}</span>
+                <span className="font-mono text-[11px] text-ame-text tabular-nums transition-colors">{position[0].toFixed(3)}</span>
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-[9px] text-slate-600 font-bold uppercase">Y_COORD</span>
-                <span className="font-mono text-[11px] text-white tabular-nums">{position[1].toFixed(3)}</span>
+                <span className="font-mono text-[11px] text-ame-text tabular-nums transition-colors">{position[1].toFixed(3)}</span>
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-[9px] text-slate-600 font-bold uppercase">Z_COORD</span>
-                <span className="font-mono text-[11px] text-white tabular-nums">{position[2].toFixed(3)}</span>
+                <span className="font-mono text-[11px] text-ame-text tabular-nums transition-colors">{position[2].toFixed(3)}</span>
               </div>
             </div>
           </div>

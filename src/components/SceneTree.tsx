@@ -9,7 +9,7 @@ export const SceneTree = () => {
   const selectedNode = nodes.find(n => n.id === selectedNodeId);
 
   return (
-    <div className="flex flex-col h-full bg-black">
+    <div className="flex flex-col h-full bg-ame-bg">
       <PanelHeader title="Scene Tree" icon={Layers} />
       <div className="flex-1 overflow-y-auto no-scrollbar text-[11px] py-2">
         {nodes.map((node, index) => {
@@ -27,12 +27,12 @@ export const SceneTree = () => {
                 delay: index * 0.08,
                 ease: [0.16, 1, 0.3, 1]
               }}
-              whileHover={{ x: 2, backgroundColor: 'rgba(167, 243, 208, 0.05)' }}
+              whileHover={{ x: 2, background: 'color-mix(in srgb, var(--color-ame-accent) 5%, transparent)' }}
               onClick={() => selectNode(node.id)}
               className={`
                 py-2 border-b border-ame-border/20 cursor-pointer transition-all flex items-center justify-between group relative overflow-hidden
-                ${isSelected ? 'text-white font-bold bg-ame-accent/5' : 'text-slate-400'}
-                ${depth === 0 ? 'px-3 bg-slate-900/10 text-ame-accent font-bold' : 'px-6'}
+                ${isSelected ? 'text-ame-text font-bold bg-ame-accent/5' : 'text-ame-muted'}
+                ${depth === 0 ? 'px-3 bg-ame-panel-bg/20 text-ame-accent font-bold' : 'px-6'}
               `}
             >
               {/* Scanline for selected */}

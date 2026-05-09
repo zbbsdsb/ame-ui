@@ -27,6 +27,8 @@ export interface SensorStream {
   status: 'ACTIVE' | 'IDLE' | 'STALE';
 }
 
+export type Theme = 'EMERALD' | 'SPACE_BLUE' | 'ONIX' | 'SNOW' | 'ROSE_RED' | 'OASIS_GREEN';
+
 interface EngineState {
   // Sensor Bridge
   sensors: SensorStream[];
@@ -85,6 +87,8 @@ interface EngineState {
   updateStats: (updates: Partial<EngineStats>) => void;
   switchAdapter: (adapter: 'UNREAL' | 'UNITY') => void;
   triggerInference: (modelId: string, entityId: string | null) => void;
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
 }
 
 const INITIAL_NODES: SceneNode[] = [
@@ -384,10 +388,10 @@ export const useEngineStore = create<EngineState>((set) => ({
       type: 'OUT_USD', 
       name: 'USD_EXPORTER_NODE', 
       position: { x: 500, y: 150 }, 
-      inputs: [{ id: 'p_in', name: 'AMAR_PAYLOAD', dataType: 'DATA' }], 
+      inputs: [{ id: 'p_in', name: 'AMAR_PAYLOAD', type: 'IN', dataType: 'DATA' }], 
       outputs: [
-        { id: 'p_ue', name: 'UE_LINK', dataType: 'SIGNAL' },
-        { id: 'p_unity', name: 'UNITY_LINK', dataType: 'SIGNAL' }
+        { id: 'p_ue', name: 'UE_LINK', type: 'OUT', dataType: 'SIGNAL' },
+        { id: 'p_unity', name: 'UNITY_LINK', type: 'OUT', dataType: 'SIGNAL' }
       ],
       data: { format: 'USD_BINARY' } 
     },
@@ -418,4 +422,9 @@ export const useEngineStore = create<EngineState>((set) => ({
     workflowNodes: state.workflowNodes.filter(n => n.id !== id),
     workflowEdges: state.workflowEdges.filter(e => e.fromNodeId !== id && e.toNodeId !== id)
   })),
+  theme: 'EMERALD',
+  setTheme: (theme) => {
+    document.documentElement.setAttribute('data-theme', theme);
+    set({ theme });
+  },
 }));

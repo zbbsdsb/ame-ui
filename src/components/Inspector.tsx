@@ -11,9 +11,9 @@ export const Inspector = () => {
 
   if (!selectedNode) {
     return (
-      <div className="h-full flex flex-col bg-black">
+      <div className="h-full flex flex-col bg-ame-bg">
         <PanelHeader title="Inspector" icon={Settings2} />
-        <div className="flex-1 flex items-center justify-center font-mono text-[10px] text-slate-700 uppercase">
+        <div className="flex-1 flex items-center justify-center font-mono text-[10px] text-ame-muted uppercase">
           No Entity Selected
         </div>
       </div>
@@ -31,22 +31,31 @@ export const Inspector = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-black">
-      <PanelHeader title={`Inspector: ${selectedNode.name}`} icon={Settings2} />
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
+    <div className="h-full flex flex-col bg-ame-bg relative overflow-hidden">
+      {/* Background Blueprint Grid */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-0" 
+        style={{ 
+          backgroundImage: 'radial-gradient(circle, var(--ame-accent) 1px, transparent 1px)',
+          backgroundSize: '24px 24px' 
+        }} 
+      />
+      
+      <div className="relative z-10 flex flex-col h-full">
+        <PanelHeader title={`Inspector: ${selectedNode.name}`} icon={Settings2} />
+        <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
         
         {/* Metaclass Header */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           key={selectedNode.id + '_header'}
-          className="px-3 py-4 border-b border-ame-border bg-slate-900/10"
+          className="px-3 py-4 border-b border-ame-border bg-ame-panel-bg/10"
         >
           <div className="ame-label mb-1">Entity Identity (AEID)</div>
-          <div className="font-mono text-xs text-white mb-3 break-all">{selectedNode.id}</div>
+          <div className="font-mono text-xs text-ame-text mb-3 break-all">{selectedNode.id}</div>
           <div className="flex gap-2">
             {selectedNode.facets.map(f => (
-              <div key={f.type} className="px-1.5 py-0.5 border border-ame-border bg-slate-950 font-mono text-[8px] text-slate-500 uppercase">
+              <div key={f.type} className="px-1.5 py-0.5 border border-ame-border bg-ame-panel-bg font-mono text-[8px] text-ame-muted uppercase">
                 {f.type}
               </div>
             ))}
@@ -74,13 +83,13 @@ export const Inspector = () => {
           animate={{ opacity: 1 }}
           className="px-3 py-6 border-t border-ame-border mt-4"
         >
-          <div className="ame-label mb-3 text-white/40 font-bold uppercase tracking-widest text-[9px]">Target Exporter Overrides</div>
+          <div className="ame-label mb-3 text-current opacity-40 font-bold uppercase tracking-widest text-[9px]">Target Exporter Overrides</div>
           <div className="space-y-1.5">
             {['UE5_Livelink', 'Blender_USD'].map((target) => (
-              <div key={target} className="flex items-center justify-between p-2 border border-ame-border/10 bg-slate-900/10 group hover:border-ame-accent/20 transition-all cursor-default">
+              <div key={target} className="flex items-center justify-between p-2 border border-ame-border/10 bg-ame-panel-bg/20 group hover:border-ame-accent/20 transition-all cursor-default">
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-medium text-slate-400 group-hover:text-slate-200 transition-colors uppercase tracking-tight">{target}</span>
-                  <span className="text-[8px] text-slate-600 font-mono tracking-tighter">AMAR_INHERITED</span>
+                  <span className="text-[10px] font-medium text-ame-muted group-hover:text-ame-text transition-colors uppercase tracking-tight">{target}</span>
+                  <span className="text-[8px] text-ame-muted/60 font-mono tracking-tighter">AMAR_INHERITED</span>
                 </div>
                 <button className="text-[8px] font-bold text-ame-accent opacity-0 group-hover:opacity-100 uppercase tracking-widest transition-opacity px-2 py-0.5 border border-ame-accent/20 hover:bg-ame-accent hover:text-black">
                   CMD
@@ -91,6 +100,7 @@ export const Inspector = () => {
         </motion.div>
       </div>
     </div>
+  </div>
   );
 };
 
@@ -111,7 +121,7 @@ const FacetPanel = ({ facet, onUpdate }: { facet: Facet, onUpdate: (field: strin
           <div className="p-1 rounded-sm bg-ame-accent/10">
             <Database className="w-3 h-3 text-ame-accent" />
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-200">{facet.type} Facet</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-ame-text/80">{facet.type} Facet</span>
         </div>
         <div className={`px-1.5 py-0.5 font-mono text-[8px] border backdrop-blur-sm ${
           facet.status === 'SYNCHRONIZED' ? 'border-ame-accent/40 text-ame-accent ame-glow' : 
@@ -153,13 +163,13 @@ const FacetPanel = ({ facet, onUpdate }: { facet: Facet, onUpdate: (field: strin
         {/* Semantic Facet */}
         {facet.type === 'Semantic' && (
           <div className="space-y-2">
-            <div className="flex justify-between items-center bg-slate-950 p-1 border border-ame-border">
-              <span className="text-[9px] text-slate-600 font-mono">CLASS</span>
-              <span className="text-[10px] text-white font-mono uppercase">{facet.data.class}</span>
+            <div className="flex justify-between items-center bg-ame-panel-bg p-1 border border-ame-border">
+              <span className="text-[9px] text-ame-muted font-mono">CLASS</span>
+              <span className="text-[10px] text-ame-text font-mono uppercase">{facet.data.class}</span>
             </div>
             <div className="flex flex-wrap gap-1 mt-1">
               {facet.data.tags?.map((tag: string) => (
-                <span key={tag} className="px-1 border border-dashed border-ame-border text-[9px] text-slate-500">#{tag}</span>
+                <span key={tag} className="px-1 border border-dashed border-ame-border text-[9px] text-ame-muted">#{tag}</span>
               ))}
             </div>
           </div>
@@ -167,13 +177,13 @@ const FacetPanel = ({ facet, onUpdate }: { facet: Facet, onUpdate: (field: strin
 
         {/* Sensor Facet */}
         {facet.type === 'Sensor' && (
-           <div className="bg-slate-950 p-2 border border-ame-border border-l-2 border-l-ame-accent">
+           <div className="bg-ame-panel-bg p-2 border border-ame-border border-l-2 border-l-ame-accent">
              <div className="flex items-center gap-2 mb-1">
                <Activity className="w-3 h-3 text-ame-accent animate-pulse" />
-               <span className="text-[10px] text-white font-mono uppercase">Streaming active</span>
+               <span className="text-[10px] text-ame-text font-mono uppercase">Streaming active</span>
              </div>
-             <div className="text-[9px] text-slate-500 font-mono">Topic: {facet.data.topic}</div>
-             <div className="text-[9px] text-slate-500 font-mono">Latency: 12ms</div>
+             <div className="text-[9px] text-ame-muted font-mono transition-colors">Topic: {facet.data.topic}</div>
+             <div className="text-[9px] text-ame-muted font-mono transition-colors">Latency: 12ms</div>
            </div>
         )}
       </div>
@@ -193,14 +203,14 @@ const TransformRow = ({ label, values, onChange }: { label: string, values: numb
 
   return (
     <div className="grid grid-cols-4 items-center gap-2 font-mono text-[10px]">
-      <span className="text-slate-600 uppercase font-bold">{label}</span>
+      <span className="text-ame-muted uppercase font-bold">{label}</span>
       <div className="col-span-3 grid grid-cols-3 gap-1">
         {values.map((v, i) => (
-          <div key={i} className="border border-ame-border px-1 bg-slate-950 flex justify-between gap-1 group/input">
-            <span className="text-slate-700 opacity-50 group-focus-within/input:text-ame-accent">{['X', 'Y', 'Z'][i]}</span>
+          <div key={i} className="border border-ame-border px-1 bg-ame-panel-bg flex justify-between gap-1 group/input">
+            <span className="text-ame-muted/40 group-focus-within/input:text-ame-accent">{['X', 'Y', 'Z'][i]}</span>
             <input 
               type="text"
-              className="bg-transparent border-none outline-none text-white w-full text-right"
+              className="bg-transparent border-none outline-none text-ame-text w-full text-right"
               defaultValue={v.toFixed(2)}
               onBlur={(e) => handleChange(i, e.target.value)}
             />

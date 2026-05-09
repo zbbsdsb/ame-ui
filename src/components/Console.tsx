@@ -26,18 +26,18 @@ export const Console = () => {
     : [];
 
   return (
-    <div className="h-full flex flex-col bg-black relative">
+    <div className="h-full flex flex-col bg-ame-bg relative transition-colors">
       <PanelHeader 
         title="Meta Console" 
         icon={Terminal} 
         extra={
           <div className="flex gap-2 font-mono text-[9px]">
             <span className="text-ame-accent">[{logs.length}] LOGS</span>
-            <span className="text-white hover:text-ame-accent cursor-pointer" onClick={() => useEngineStore.getState().clearLogs()}>[CLEAR]</span>
+            <span className="text-ame-text hover:text-ame-accent cursor-pointer" onClick={() => useEngineStore.getState().clearLogs()}>[CLEAR]</span>
           </div>
         }
       />
-      <div className="flex-1 p-2 font-mono text-[10px] overflow-y-auto leading-relaxed text-slate-300 no-scrollbar pb-12 relative">
+      <div className="flex-1 p-2 font-mono text-[10px] overflow-y-auto leading-relaxed text-ame-muted no-scrollbar pb-12 relative">
         {/* Hex Data Stream Background */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.03] overflow-hidden flex flex-wrap content-start">
           {[...Array(20)].map((_, i) => (
@@ -83,10 +83,10 @@ export const Console = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="absolute bottom-12 left-2 right-2 bg-slate-900 border border-ame-accent/30 p-1 rounded-sm z-50 shadow-2xl backdrop-blur-xl"
+            className="absolute bottom-12 left-2 right-2 bg-ame-panel-bg border border-ame-accent/30 p-1 rounded-sm z-50 shadow-2xl backdrop-blur-xl"
           >
             <div className="px-2 py-1 border-b border-ame-border mb-1">
-              <span className="text-[8px] text-slate-500 uppercase font-bold">Meta-Search Suggestions</span>
+              <span className="text-[8px] text-ame-muted uppercase font-bold">Meta-Search Suggestions</span>
             </div>
             {searchResults.map(item => (
               <div 
@@ -96,9 +96,9 @@ export const Console = () => {
               >
                 <div className="flex items-center gap-3">
                    <span className="text-[9px] text-ame-accent font-bold">[{item.type}]</span>
-                   <span className="text-[10px] text-slate-200">{item.name}</span>
+                   <span className="text-[10px] text-ame-text">{item.name}</span>
                 </div>
-                <span className="text-[8px] text-slate-600 opacity-0 group-hover/item:opacity-100 uppercase">Click to Autofill</span>
+                <span className="text-[8px] text-ame-muted opacity-0 group-hover/item:opacity-100 uppercase">Click to Autofill</span>
               </div>
             ))}
           </motion.div>
@@ -106,20 +106,20 @@ export const Console = () => {
       </AnimatePresence>
 
       {/* Input Tray */}
-      <div className="absolute bottom-0 left-0 right-0 p-2 bg-black border-t border-ame-border flex items-center gap-3 group">
+      <div className="absolute bottom-0 left-0 right-0 p-2 bg-ame-bg border-t border-ame-border flex items-center gap-3 group">
         <div className="flex items-center gap-1">
           <span className="text-ame-accent font-bold font-mono text-xs">{input.startsWith('/') ? 'λ' : '>'}</span>
           {input.startsWith('/') && <div className="w-1 h-3 bg-ame-accent animate-pulse" />}
         </div>
         <input 
-          className="bg-transparent border-none outline-none text-white w-full font-mono text-xs placeholder:text-slate-800"
+          className="bg-transparent border-none outline-none text-ame-text w-full font-mono text-xs placeholder:text-ame-muted/40"
           placeholder="Type to search nodes, assets... or / to execute command"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleCommand}
           autoFocus
         />
-        <div className="flex items-center gap-2 px-2 bg-slate-900 border border-ame-border font-mono text-[8px] text-slate-600 uppercase">
+        <div className="flex items-center gap-2 px-2 bg-ame-panel-bg border border-ame-border font-mono text-[8px] text-ame-muted uppercase">
           Ins
         </div>
       </div>
