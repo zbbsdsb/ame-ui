@@ -1,12 +1,35 @@
-import React, { useState } from 'react';
-import { Terminal, Cpu, Radio, GitBranch } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Terminal, Cpu, Radio, GitBranch, Activity } from 'lucide-react';
 import { Console } from './Console';
 import { ModelRouterDashboard } from './ModelRouterDashboard';
 import { SensorBridgeDashboard } from './SensorBridgeDashboard';
 import { StudioCanvas } from './StudioCanvas';
+import { TelemetryDashboard } from './TelemetryDashboard';
+import { useEngineStore } from '../store/useEngineStore';
 
 export const BottomPanel = () => {
-  const [activeTab, setActiveTab] = useState<'CONSOLE' | 'MODELS' | 'SENSORS' | 'STUDIO'>('CONSOLE');
+  const [activeTab, setActiveTab] = useState<'CONSOLE' | 'MODELS' | 'SENSORS' | 'STUDIO' | 'TELEMETRY'>('CONSOLE');
+  const { pushTelemetry, stats, updateStats } = useEngineStore();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Simulate real-time fluctuations
+      const newFps = stats.fps + (Math.random() - 0.5) * 4;
+      const newGpu = Math.min(100, Math.max(0, stats.gpuUsage + (Math.random() - 0.5) * 2));
+      const newCpu = 20 + Math.random() * 15;
+      
+      updateStats({ fps: Math.round(newFps), gpuUsage: Math.round(newGpu) });
+      
+      pushTelemetry({
+        time: new Date().toLocaleTimeString('en-GB', { hour12: false }).split(' ')[0],
+        fps: Math.round(newFps),
+        gpu: Math.round(newGpu),
+        cpu: Math.round(newCpu)
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [pushTelemetry, stats, updateStats]);
 
   return (
     <div className="flex flex-col h-full bg-ame-bg">
@@ -16,6 +39,12 @@ export const BottomPanel = () => {
           onClick={() => setActiveTab('CONSOLE')} 
           icon={Terminal} 
           label="Terminal" 
+        />
+        <TabButton 
+          active={activeTab === 'TELEMETRY'} 
+          onClick={() => setActiveTab('TELEMETRY')} 
+          icon={Activity} 
+          label="Telemetry" 
         />
         <TabButton 
           active={activeTab === 'MODELS'} 
@@ -38,6 +67,7 @@ export const BottomPanel = () => {
       </div>
       <div className="flex-1 overflow-hidden flex flex-col">
         {activeTab === 'CONSOLE' && <Console />}
+        {activeTab === 'TELEMETRY' && <TelemetryDashboard />}
         {activeTab === 'MODELS' && <ModelRouterDashboard />}
         {activeTab === 'SENSORS' && <SensorBridgeDashboard />}
         {activeTab === 'STUDIO' && <StudioCanvas />}

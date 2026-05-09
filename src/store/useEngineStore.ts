@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { SceneNode, LogEntry, EngineStats, WorkflowNode, WorkflowEdge } from '../types';
+import { SceneNode, LogEntry, EngineStats, WorkflowNode, WorkflowEdge, TelemetryData } from '../types';
 
 export interface ModelEntry {
   id: string;
@@ -49,10 +49,14 @@ interface EngineState {
   // Workflow Studio
   workflowNodes: WorkflowNode[];
   workflowEdges: WorkflowEdge[];
+  selectedWorkflowNodeId: string | null;
+  workflowViewport: { x: number; y: number; zoom: number };
   isStudioExpanded: boolean;
   isWorkflowRunning: boolean;
   setWorkflowRunning: (running: boolean) => void;
   setStudioExpanded: (expanded: boolean) => void;
+  setSelectedWorkflowNodeCard: (id: string | null) => void;
+  setWorkflowViewport: (viewport: { x: number; y: number; zoom: number }) => void;
   addWorkflowNode: (node: Omit<WorkflowNode, 'id'>) => void;
   updateWorkflowNode: (id: string, updates: Partial<WorkflowNode>) => void;
   connectPorts: (fromNodeId: string, fromPortId: string, toNodeId: string, toPortId: string) => void;
@@ -78,6 +82,8 @@ interface EngineState {
   gizmoMode: 'SELECT' | 'TRANSLATE' | 'ROTATE' | 'SCALE';
   setGizmoMode: (mode: 'SELECT' | 'TRANSLATE' | 'ROTATE' | 'SCALE') => void;
   stats: EngineStats;
+  telemetryHistory: TelemetryData[];
+  pushTelemetry: (data: TelemetryData) => void;
   routing: {
     active: boolean;
     lastModel: string;
@@ -255,6 +261,10 @@ export const useEngineStore = create<EngineState>((set) => ({
     status: 'READY',
     activeAdapter: 'UNREAL'
   },
+  telemetryHistory: [],
+  pushTelemetry: (data) => set((state) => ({
+    telemetryHistory: [...state.telemetryHistory, data].slice(-40) // Keep last 40 points
+  })),
   models: [
     { id: 'gpt-4o', name: 'OpenAI GPT-4o', tier: 'P1', status: 'ONLINE', latency: 450 },
     { id: 'vllm-llama3', name: 'vLLM Llama-3-70B', tier: 'P0', status: 'ONLINE', latency: 42 },
@@ -368,41 +378,65 @@ export const useEngineStore = create<EngineState>((set) => ({
     {
       id: 'node_1',
       type: 'SENSOR_BRIDGE',
-      name: 'LiDAR_Stream_Front',
-      position: { x: 100, y: 100 },
+      category: 'SENSOR',
+      name: 'Lidar_Front',
+      position: { x: 50, y: 150 },
       inputs: [],
-      outputs: [{ id: 'p1', name: 'Raw_PC2', type: 'OUT', dataType: 'SENSOR' }],
+      outputs: [{ id: 'out_pc', name: 'PC2', type: 'OUT', dataType: 'SENSOR' }],
       data: {}
     },
     {
-      id: 'node_2',
-      type: 'AI_INFERENCE',
-      name: 'Object_Detection_L3',
-      position: { x: 400, y: 150 },
-      inputs: [{ id: 'p2', name: 'Input_PC2', type: 'IN', dataType: 'SENSOR' }],
-      outputs: [{ id: 'p3', name: 'Detections', type: 'OUT', dataType: 'DATA' }],
-      data: { model: 'vllm-llama3' }
+      id: 'node_math',
+      type: 'MATH_THRESHOLD',
+      category: 'MATH',
+      name: 'Depth_Filter',
+      position: { x: 300, y: 150 },
+      inputs: [{ id: 'in_pc', name: 'IN', type: 'IN', dataType: 'SENSOR' }],
+      outputs: [
+        { id: 'out_near', name: 'NEAR', type: 'OUT', dataType: 'SIGNAL' },
+        { id: 'out_far', name: 'FAR', type: 'OUT', dataType: 'SIGNAL' }
+      ],
+      data: { threshold: 2.5 }
+    },
+    {
+      id: 'node_logic',
+      type: 'CONDITION',
+      category: 'LOGIC',
+      name: 'Safety_Check',
+      position: { x: 550, y: 150 },
+      inputs: [{ id: 'in_sig', name: 'TRIG', type: 'IN', dataType: 'SIGNAL' }],
+      outputs: [
+        { id: 'out_true', name: 'PASS', type: 'OUT', dataType: 'SIGNAL' },
+        { id: 'out_false', name: 'FAIL', type: 'OUT', dataType: 'SIGNAL' }
+      ],
+      data: { invert: false }
     },
     { 
       id: 'node_ex_1', 
       type: 'OUT_USD', 
-      name: 'USD_EXPORTER_NODE', 
-      position: { x: 500, y: 150 }, 
+      category: 'OUTPUT',
+      name: 'USD_Exporter', 
+      position: { x: 800, y: 150 }, 
       inputs: [{ id: 'p_in', name: 'AMAR_PAYLOAD', type: 'IN', dataType: 'DATA' }], 
       outputs: [
-        { id: 'p_ue', name: 'UE_LINK', type: 'OUT', dataType: 'SIGNAL' },
-        { id: 'p_unity', name: 'UNITY_LINK', type: 'OUT', dataType: 'SIGNAL' }
+        { id: 'p_ue', name: 'UE5', type: 'OUT', dataType: 'SIGNAL' },
+        { id: 'p_unity', name: 'UNITY', type: 'OUT', dataType: 'SIGNAL' }
       ],
       data: { format: 'USD_BINARY' } 
     },
   ],
   workflowEdges: [
-    { id: 'edge_1', fromNodeId: 'node_1', fromPortId: 'p1', toNodeId: 'node_ex_1', toPortId: 'p_in' }
+    { id: 'edge_1', fromNodeId: 'node_1', fromPortId: 'out_pc', toNodeId: 'node_math', toPortId: 'in_pc' },
+    { id: 'edge_2', fromNodeId: 'node_math', fromPortId: 'out_near', toNodeId: 'node_logic', toPortId: 'in_sig' }
   ],
+  selectedWorkflowNodeId: null,
+  workflowViewport: { x: 0, y: 0, zoom: 1 },
   isStudioExpanded: false,
   isWorkflowRunning: true,
   setWorkflowRunning: (running) => set({ isWorkflowRunning: running }),
   setStudioExpanded: (expanded) => set({ isStudioExpanded: expanded }),
+  setSelectedWorkflowNodeCard: (id) => set({ selectedWorkflowNodeId: id }),
+  setWorkflowViewport: (viewport) => set({ workflowViewport: viewport }),
   addWorkflowNode: (node) => set((state) => ({
     workflowNodes: [...state.workflowNodes, { ...node, id: `node_${Math.random().toString(36).substr(2, 9)}` }]
   })),

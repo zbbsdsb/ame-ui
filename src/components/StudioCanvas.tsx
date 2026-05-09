@@ -8,6 +8,26 @@ const NODE_WIDTH = 180;
 const PORT_RADIUS = 5;
 const HEADER_HEIGHT = 24;
 
+const MenuButton = ({ onClick, label, accent }: { onClick: () => void, label: string, accent?: string }) => (
+  <button 
+    onClick={onClick}
+    className="bg-ame-panel-bg/80 border px-3 py-1 text-[10px] font-bold font-mono hover:text-black transition-colors uppercase"
+    style={{ 
+      borderColor: accent || 'var(--ame-border)', 
+      color: accent || 'var(--ame-text)',
+      backgroundColor: 'rgba(2, 2, 2, 0.8)'
+    }}
+    onMouseEnter={(e) => {
+      if (accent) e.currentTarget.style.backgroundColor = accent;
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.backgroundColor = 'rgba(2, 2, 2, 0.8)';
+    }}
+  >
+    {label}
+  </button>
+);
+
 export const StudioCanvas = () => {
   const { 
     workflowNodes, 
@@ -21,8 +41,21 @@ export const StudioCanvas = () => {
     addWorkflowNode,
     isWorkflowRunning,
     setWorkflowRunning,
-    theme
+    theme,
+    workflowViewport,
+    setWorkflowViewport,
+    selectedWorkflowNodeId,
+    setSelectedWorkflowNodeCard
   } = useEngineStore();
+
+  const CATEGORY_COLORS = {
+    SENSOR: '#3b82f6', // Blue
+    LOGIC: '#a855f7', // Purple
+    MATH: '#fb923c', // Orange
+    ACTION: '#f43f5e', // Red
+    OUTPUT: '#10b981', // Emerald
+    AI: '#DEFF9A'      // Theme Accent (Emerald)
+  };
 
   const themeColors = {
     EMERALD: '#A7F3D0',
@@ -133,6 +166,28 @@ export const StudioCanvas = () => {
     }
   };
 
+  const handleZoom = (e: any) => {
+    e.evt.preventDefault();
+    const stage = e.target.getStage();
+    const scaleBy = 1.05;
+    const oldScale = stage.scaleX();
+    const pointer = stage.getPointerPosition();
+
+    const mousePointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
+    };
+
+    const newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
+    const clampedScale = Math.min(Math.max(newScale, 0.2), 3);
+
+    setWorkflowViewport({
+      x: pointer.x - mousePointTo.x * clampedScale,
+      y: pointer.y - mousePointTo.y * clampedScale,
+      zoom: clampedScale,
+    });
+  };
+
   const onMouseUp = () => {
     if (dragEdge && hoveredPort) {
       // Connect
@@ -156,9 +211,24 @@ export const StudioCanvas = () => {
         width={dimensions.width} 
         height={dimensions.height} 
         draggable={!dragEdge}
+        scaleX={workflowViewport.zoom}
+        scaleY={workflowViewport.zoom}
+        x={workflowViewport.x}
+        y={workflowViewport.y}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
-        onClick={() => setSelectedId(null)}
+        onWheel={handleZoom}
+        onDragEnd={(e) => {
+          setWorkflowViewport({
+            x: e.target.x(),
+            y: e.target.y(),
+            zoom: e.target.scaleX(),
+          });
+        }}
+        onClick={() => {
+          setSelectedId(null);
+          setSelectedWorkflowNodeCard(null);
+        }}
       >
         <Layer>
           {/* Edges */}
@@ -174,7 +244,7 @@ export const StudioCanvas = () => {
               <Group key={edge.id}>
                 <Path
                   data={drawBezier(fromPos.x, fromPos.y, toPos.x, toPos.y)}
-                  stroke={selectedId === edge.id ? accentColor : `${accentColor}33`}
+                  stroke={selectedId === edge.id ? accentColor : `${accentColor}22`}
                   strokeWidth={2}
                   onClick={(e) => {
                     e.cancelBubble = true;
@@ -231,137 +301,187 @@ export const StudioCanvas = () => {
           )}
 
           {/* Nodes */}
-          {workflowNodes.map(node => (
-            <Group
-              key={node.id}
-              x={node.position.x}
-              y={node.position.y}
-              draggable
-              onDragMove={(e) => handleDragMove(node.id, e)}
-              onClick={(e) => {
-                e.cancelBubble = true;
-                setSelectedId(node.id);
-              }}
-            >
-              {/* Box */}
-              <Rect
-                width={NODE_WIDTH}
-                height={60 + Math.max(node.inputs.length, node.outputs.length) * 20}
-                fill={isSnow ? "#f1f5f9" : "#0a0a0a"}
-                stroke={selectedId === node.id ? accentColor : (isSnow ? '#e2e8f0' : '#1e293b')}
-                strokeWidth={selectedId === node.id ? 2 : 1}
-                cornerRadius={2}
-                shadowBlur={selectedId === node.id ? 20 : 0}
-                shadowColor={`${accentColor}33`}
-                opacity={0}
-                onMouseEnter={(e) => {
-                  const stage = e.target.getStage();
-                  if (stage) stage.container().style.cursor = 'move';
-                }}
-                onMouseLeave={(e) => {
-                  const stage = e.target.getStage();
-                  if (stage) stage.container().style.cursor = 'default';
-                }}
-                ref={(nodeRef) => {
-                  if (nodeRef && nodeRef.opacity() === 0) {
-                    nodeRef.to({
-                      opacity: 1,
-                      duration: 0.5,
-                      easing: (t: any) => t * (2 - t)
-                    });
-                  }
-                }}
-              />
-              
-              {/* Header */}
-              <Rect
-                width={NODE_WIDTH}
-                height={HEADER_HEIGHT}
-                fill={selectedId === node.id ? `${accentColor}22` : (isSnow ? '#e2e8f0' : '#0f172a')}
-                cornerRadius={[2, 2, 0, 0]}
-              />
-              <Text
-                text={node.name}
-                fontSize={9}
-                fontStyle="bold"
-                fill={selectedId === node.id ? accentColor : (isSnow ? '#0f172a' : '#cbd5e1')}
-                x={10}
-                y={8}
-                fontFamily="monospace"
-                letterSpacing={1}
-              />
+          {workflowNodes.map(node => {
+            const isSelected = selectedId === node.id || selectedWorkflowNodeId === node.id;
+            const categoryColor = CATEGORY_COLORS[node.category || 'LOGIC'] || '#64748b';
 
-              {/* Ports */}
-              {node.inputs.map((p, i) => (
-                <Group key={p.id} y={HEADER_HEIGHT + 15 + i * 20}>
-                  <Circle 
-                    x={0} 
-                    radius={PORT_RADIUS} 
-                    fill="#3b82f6" 
-                    stroke="#000" 
-                    strokeWidth={1}
-                    onMouseEnter={() => setHoveredPort({nodeId: node.id, portId: p.id})}
-                    onMouseLeave={() => setHoveredPort(null)}
-                    onMouseDown={(e) => onPortMouseDown(node.id, p.id, e)}
-                  />
-                  <Text text={p.name} fontSize={8} fill="#64748b" x={10} y={-3} fontFamily="monospace" />
-                </Group>
-              ))}
+            return (
+              <Group
+                key={node.id}
+                x={node.position.x}
+                y={node.position.y}
+                draggable
+                onDragMove={(e) => handleDragMove(node.id, e)}
+                onClick={(e) => {
+                  e.cancelBubble = true;
+                  setSelectedId(node.id);
+                  setSelectedWorkflowNodeCard(node.id);
+                }}
+              >
+                {/* Box */}
+                <Rect
+                  width={NODE_WIDTH}
+                  height={60 + Math.max(node.inputs.length, node.outputs.length) * 20}
+                  fill={isSnow ? "#f1f5f9" : "#0a0a0a"}
+                  stroke={isSelected ? accentColor : (isSnow ? '#e2e8f0' : '#1e293b')}
+                  strokeWidth={isSelected ? 2 : 1}
+                  cornerRadius={2}
+                  shadowBlur={isSelected ? 20 : 0}
+                  shadowColor={`${accentColor}33`}
+                  opacity={0}
+                  onMouseEnter={(e) => {
+                    const stage = e.target.getStage();
+                    if (stage) stage.container().style.cursor = 'move';
+                  }}
+                  onMouseLeave={(e) => {
+                    const stage = e.target.getStage();
+                    if (stage) stage.container().style.cursor = 'default';
+                  }}
+                  ref={(nodeRef) => {
+                    if (nodeRef && nodeRef.opacity() === 0) {
+                      nodeRef.to({
+                        opacity: 1,
+                        duration: 0.5,
+                        easing: (t: any) => t * (2 - t)
+                      });
+                    }
+                  }}
+                />
+                
+                {/* Category Indicator Accent */}
+                <Rect
+                  width={2}
+                  height={60 + Math.max(node.inputs.length, node.outputs.length) * 20}
+                  fill={categoryColor}
+                  cornerRadius={[2, 0, 0, 2]}
+                  opacity={0.8}
+                />
 
-              {node.outputs.map((p, i) => (
-                <Group key={p.id} y={HEADER_HEIGHT + 15 + i * 20}>
-                  <Circle 
-                    x={NODE_WIDTH} 
-                    radius={PORT_RADIUS} 
-                    fill="#10b981" 
-                    stroke="#000" 
-                    strokeWidth={1}
-                    onMouseEnter={() => setHoveredPort({nodeId: node.id, portId: p.id})}
-                    onMouseLeave={() => setHoveredPort(null)}
-                    onMouseDown={(e) => onPortMouseDown(node.id, p.id, e)}
-                  />
-                  <Text text={p.name} fontSize={8} fill="#64748b" x={NODE_WIDTH - 60} y={-3} align="right" width={50} fontFamily="monospace" />
-                </Group>
-              ))}
-            </Group>
-          ))}
+                {/* Header */}
+                <Rect
+                  width={NODE_WIDTH}
+                  height={HEADER_HEIGHT}
+                  fill={isSelected ? `${accentColor}22` : (isSnow ? '#e2e8f0' : '#0f172a')}
+                  cornerRadius={[2, 2, 0, 0]}
+                  opacity={0.5}
+                />
+                <Text
+                  text={node.name}
+                  fontSize={9}
+                  fontStyle="bold"
+                  fill={isSelected ? accentColor : (isSnow ? '#0f172a' : '#cbd5e1')}
+                  x={10}
+                  y={8}
+                  fontFamily="monospace"
+                  letterSpacing={1}
+                />
+
+                {/* Ports */}
+                {node.inputs.map((p, i) => (
+                  <Group key={p.id} y={HEADER_HEIGHT + 15 + i * 20}>
+                    <Circle 
+                      x={0} 
+                      radius={PORT_RADIUS} 
+                      fill={categoryColor} 
+                      stroke="#000" 
+                      strokeWidth={1}
+                      onMouseEnter={() => setHoveredPort({nodeId: node.id, portId: p.id})}
+                      onMouseLeave={() => setHoveredPort(null)}
+                      onMouseDown={(e) => onPortMouseDown(node.id, p.id, e)}
+                    />
+                    <Text text={p.name} fontSize={8} fill="#64748b" x={10} y={-3} fontFamily="monospace" />
+                  </Group>
+                ))}
+
+                {node.outputs.map((p, i) => (
+                  <Group key={p.id} y={HEADER_HEIGHT + 15 + i * 20}>
+                    <Circle 
+                      x={NODE_WIDTH} 
+                      radius={PORT_RADIUS} 
+                      fill={categoryColor} 
+                      stroke="#000" 
+                      strokeWidth={1}
+                      onMouseEnter={() => setHoveredPort({nodeId: node.id, portId: p.id})}
+                      onMouseLeave={() => setHoveredPort(null)}
+                      onMouseDown={(e) => onPortMouseDown(node.id, p.id, e)}
+                    />
+                    <Text text={p.name} fontSize={8} fill="#64748b" x={NODE_WIDTH - 60} y={-3} align="right" width={50} fontFamily="monospace" />
+                  </Group>
+                ))}
+              </Group>
+            );
+          })}
         </Layer>
       </Stage>
 
       {/* Control Overlay */}
-      <div className="absolute top-4 left-4 flex gap-2">
-        <button 
-          onClick={() => addWorkflowNode({
-            type: 'LOGIC',
-            name: `Logic_Gate_${nanoid(4)}`,
-            position: { x: 50, y: 50 },
-            inputs: [{ id: nanoid(), name: 'IN', type: 'IN', dataType: 'DATA' }],
-            outputs: [{ id: nanoid(), name: 'OUT', type: 'OUT', dataType: 'DATA' }],
-            data: {}
-          })}
-          className="bg-ame-panel-bg/80 border border-ame-accent/30 px-3 py-1 text-[10px] text-ame-accent font-bold font-mono hover:bg-ame-accent hover:text-ame-bg transition-colors uppercase"
-        >
-          + Add Node
-        </button>
-        {!isStudioExpanded && (
-          <button 
-            onClick={() => setStudioExpanded(true)}
-            className="bg-ame-panel-bg/80 border border-ame-border px-3 py-1 text-[10px] text-ame-text font-bold font-mono hover:bg-ame-text hover:text-ame-bg transition-colors uppercase"
-          >
-            Expand Studio
-          </button>
-        )}
-        <div className="bg-ame-panel-bg/60 px-3 py-1 border border-ame-border text-[9px] text-ame-muted font-mono flex items-center gap-3 uppercase">
-          Workflow Status: 
-          <span className={`font-bold ${isWorkflowRunning ? 'text-emerald-500' : 'text-amber-500'}`}>
-            {isWorkflowRunning ? 'Streaming' : 'Paused'}
-          </span>
-          <button 
-            onClick={() => setWorkflowRunning(!isWorkflowRunning)}
-            className="ml-2 px-2 py-0.5 border border-ame-border hover:border-ame-text transition-colors bg-ame-bg text-ame-text"
-          >
-            {isWorkflowRunning ? 'STOP' : 'RUN'}
-          </button>
+      <div className="absolute top-4 left-4 flex flex-col gap-2">
+        <div className="flex gap-2">
+          <MenuButton 
+            onClick={() => addWorkflowNode({
+              type: 'LOGIC_AND',
+              category: 'LOGIC',
+              name: 'Logic_And',
+              position: { x: (100 - workflowViewport.x) / workflowViewport.zoom, y: (100 - workflowViewport.y) / workflowViewport.zoom },
+              inputs: [{ id: nanoid(), name: 'A', type: 'IN', dataType: 'DATA' }, { id: nanoid(), name: 'B', type: 'IN', dataType: 'DATA' }],
+              outputs: [{ id: nanoid(), name: 'OUT', type: 'OUT', dataType: 'DATA' }],
+              data: {}
+            })}
+            label="+ And Gate"
+            accent="#a855f7"
+          />
+          <MenuButton 
+            onClick={() => addWorkflowNode({
+              type: 'MATH_ABS',
+              category: 'MATH',
+              name: 'Absolute',
+              position: { x: (150 - workflowViewport.x) / workflowViewport.zoom, y: (150 - workflowViewport.y) / workflowViewport.zoom },
+              inputs: [{ id: nanoid(), name: 'VAL', type: 'IN', dataType: 'DATA' }],
+              outputs: [{ id: nanoid(), name: 'ABS', type: 'OUT', dataType: 'DATA' }],
+              data: {}
+            })}
+            label="+ Abs Node"
+            accent="#fb923c"
+          />
+           <MenuButton 
+            onClick={() => addWorkflowNode({
+              type: 'AI_INFERENCE',
+              category: 'AI',
+              name: 'Inference',
+              position: { x: (200 - workflowViewport.x) / workflowViewport.zoom, y: (200 - workflowViewport.y) / workflowViewport.zoom },
+              inputs: [{ id: nanoid(), name: 'PROMPT', type: 'IN', dataType: 'DATA' }],
+              outputs: [{ id: nanoid(), name: 'RESULT', type: 'OUT', dataType: 'DATA' }],
+              data: { model: 'gpt-4o' }
+            })}
+            label="+ AI Node"
+            accent={accentColor}
+          />
+        </div>
+
+        <div className="flex gap-2">
+          {!isStudioExpanded && (
+            <button 
+              onClick={() => setStudioExpanded(true)}
+              className="bg-ame-panel-bg/80 border border-ame-border px-3 py-1 text-[10px] text-ame-text font-bold font-mono hover:bg-ame-text hover:text-ame-bg transition-colors uppercase"
+            >
+              Expand Studio
+            </button>
+          )}
+          <div className="bg-ame-panel-bg/60 px-3 py-1 border border-ame-border text-[9px] text-ame-muted font-mono flex items-center gap-3 uppercase">
+            Workflow Status: 
+            <span className={`font-bold ${isWorkflowRunning ? 'text-emerald-500' : 'text-amber-500'}`}>
+              {isWorkflowRunning ? 'Streaming' : 'Paused'}
+            </span>
+            <button 
+              onClick={() => setWorkflowRunning(!isWorkflowRunning)}
+              className="ml-2 px-2 py-0.5 border border-ame-border hover:border-ame-text transition-colors bg-ame-bg text-ame-text"
+            >
+              {isWorkflowRunning ? 'STOP' : 'RUN'}
+            </button>
+          </div>
+          <div className="bg-ame-panel-bg/60 px-3 py-1 border border-ame-border text-[9px] text-ame-muted font-mono flex items-center gap-2 uppercase">
+             Zoom: <span className="text-ame-accent">{(workflowViewport.zoom * 100).toFixed(0)}%</span>
+          </div>
         </div>
       </div>
 

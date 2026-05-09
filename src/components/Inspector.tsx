@@ -6,15 +6,102 @@ import { useEngineStore } from '../store/useEngineStore';
 import { Facet } from '../types';
 
 export const Inspector = () => {
-  const { nodes, selectedNodeId, updateNode } = useEngineStore();
+  const { nodes, selectedNodeId, updateNode, workflowNodes, selectedWorkflowNodeId, updateWorkflowNode } = useEngineStore();
   const selectedNode = nodes.find(n => n.id === selectedNodeId);
+  const selectedWorkflowNode = workflowNodes.find(n => n.id === selectedWorkflowNodeId);
 
-  if (!selectedNode) {
+  if (!selectedNode && !selectedWorkflowNode) {
     return (
       <div className="h-full flex flex-col bg-ame-bg">
         <PanelHeader title="Inspector" icon={Settings2} />
         <div className="flex-1 flex items-center justify-center font-mono text-[10px] text-ame-muted uppercase">
-          No Entity Selected
+          No Selection
+        </div>
+      </div>
+    );
+  }
+
+  // Node Inspector View
+  if (selectedWorkflowNode) {
+    return (
+      <div className="h-full flex flex-col bg-ame-bg relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none z-0" 
+          style={{ 
+            backgroundImage: 'radial-gradient(circle, var(--ame-accent) 1px, transparent 1px)',
+            backgroundSize: '24px 24px' 
+          }} 
+        />
+        <div className="relative z-10 flex flex-col h-full">
+          <PanelHeader title={`Node: ${selectedWorkflowNode.name}`} icon={Zap} />
+          <div className="flex-1 overflow-y-auto no-scrollbar p-3 space-y-6">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <div className="ame-label mb-1 uppercase tracking-widest text-[9px]">Node ID</div>
+              <div className="font-mono text-[10px] text-ame-muted bg-ame-panel-bg p-1.5 border border-ame-border break-all">{selectedWorkflowNode.id}</div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+              <div className="ame-label mb-1 uppercase tracking-widest text-[9px]">Category</div>
+              <div className="flex items-center gap-2">
+                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getCategoryColor(selectedWorkflowNode.category) }} />
+                 <span className="font-mono text-xs text-ame-text uppercase">{selectedWorkflowNode.category || 'LOGIC'}</span>
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+              <div className="ame-label mb-3 uppercase tracking-widest text-[9px]">Properties (Mutable)</div>
+              <div className="space-y-4">
+                {Object.entries(selectedWorkflowNode.data).map(([key, value]) => (
+                  <div key={key} className="space-y-1.5">
+                    <div className="flex justify-between items-center px-1">
+                      <span className="text-[10px] font-mono text-ame-muted uppercase">{key}</span>
+                      <span className="text-[10px] font-mono text-ame-accent">{typeof value === 'number' ? value.toFixed(2) : String(value)}</span>
+                    </div>
+                    {typeof value === 'number' ? (
+                       <input 
+                        type="range" 
+                        min="0" max="10" step="0.1"
+                        value={value}
+                        onChange={(e) => updateWorkflowNode(selectedWorkflowNode.id, { data: { ...selectedWorkflowNode.data, [key]: parseFloat(e.target.value) }})}
+                        className="w-full h-1 bg-slate-900 appearance-none cursor-pointer accent-ame-accent"
+                      />
+                    ) : typeof value === 'boolean' ? (
+                       <button 
+                        onClick={() => updateWorkflowNode(selectedWorkflowNode.id, { data: { ...selectedWorkflowNode.data, [key]: !value }})}
+                        className="w-full py-1.5 border border-ame-border bg-ame-panel-bg text-[10px] font-mono text-ame-text uppercase hover:border-ame-accent transition-colors"
+                      >
+                        {String(value)}
+                      </button>
+                    ) : (
+                      <input 
+                        type="text"
+                        defaultValue={String(value)}
+                        onBlur={(e) => updateWorkflowNode(selectedWorkflowNode.id, { data: { ...selectedWorkflowNode.data, [key]: e.target.value }})}
+                        className="w-full bg-ame-bg border border-ame-border p-1.5 text-[10px] font-mono text-ame-text outline-none focus:border-ame-accent"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="pt-4">
+              <div className="ame-label mb-2 uppercase tracking-widest text-[9px]">Port Interface</div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <span className="text-[8px] text-ame-muted font-bold block mb-1 uppercase">Inputs</span>
+                  {selectedWorkflowNode.inputs.map(p => (
+                    <div key={p.id} className="text-[9px] font-mono text-blue-400 bg-blue-400/5 border border-blue-400/20 px-1.5 py-1">[{p.dataType}] {p.name}</div>
+                  ))}
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[8px] text-ame-muted font-bold block mb-1 uppercase">Outputs</span>
+                  {selectedWorkflowNode.outputs.map(p => (
+                    <div key={p.id} className="text-[9px] font-mono text-emerald-400 bg-emerald-400/5 border border-emerald-400/20 px-1.5 py-1">[{p.dataType}] {p.name}</div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
     );
@@ -219,4 +306,16 @@ const TransformRow = ({ label, values, onChange }: { label: string, values: numb
       </div>
     </div>
   );
+};
+
+const getCategoryColor = (category?: string) => {
+  switch (category) {
+    case 'SENSOR': return '#3b82f6';
+    case 'LOGIC': return '#a855f7';
+    case 'MATH': return '#fb923c';
+    case 'ACTION': return '#f43f5e';
+    case 'OUTPUT': return '#10b981';
+    case 'AI': return '#DEFF9A';
+    default: return '#64748b';
+  }
 };

@@ -25,7 +25,8 @@ export interface WorkflowPort {
 /** Represents a functional block in the Workflow Studio */
 export interface WorkflowNode {
   id: string;
-  type: 'SENSOR_BRIDGE' | 'AI_INFERENCE' | 'LOGIC' | 'OUT_USD';
+  type: string;
+  category?: 'LOGIC' | 'MATH' | 'ACTION' | 'SENSOR' | 'OUTPUT' | 'AI';
   name: string;
   position: { x: number; y: number };
   inputs: WorkflowPort[];
@@ -57,4 +58,11 @@ export interface EngineStats {
   version: string;
   status: 'READY' | 'LOADING' | 'ERROR' | 'PATCHING';
   activeAdapter: 'UNREAL' | 'UNITY' | 'SOLVER' | 'NONE';
+}
+
+export interface TelemetryData {
+  time: string;
+  fps: number;
+  gpu: number;
+  cpu: number;
 }
