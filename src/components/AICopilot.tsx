@@ -12,7 +12,9 @@ export const AICopilot = () => {
     isAiLoading, 
     setAiLoading,
     workflowNodes,
-    addWorkflowNode
+    addWorkflowNode,
+    aiModel,
+    setAiModel
   } = useEngineStore();
 
   const [input, setInput] = useState('');
@@ -71,7 +73,7 @@ export const AICopilot = () => {
       };
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: aiModel === 'gemini-3-flash' ? 'gemini-3-flash-preview' : (aiModel === 'gemini-2.0-pro' ? 'gemini-2.0-pro-exp-02-05' : 'gemini-1.5-flash'),
         contents: [...aiChatHistory, userMsg],
         config: {
           systemInstruction: `You are AMAR Engine Copilot, an expert in procedural workflow design. 
@@ -113,13 +115,28 @@ export const AICopilot = () => {
 
   return (
     <div className="flex flex-col h-full bg-ame-bg border-l border-ame-border w-80">
-      <div className="p-4 border-b border-ame-border flex items-center justify-between bg-ame-panel-bg/20">
-        <div className="flex items-center gap-2">
-          <BrainCircuit className="w-4 h-4 text-ame-accent animate-pulse" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-ame-text">AI Logic Copilot</span>
+      <div className="p-4 border-b border-ame-border flex flex-col gap-3 bg-ame-panel-bg/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BrainCircuit className="w-4 h-4 text-ame-accent animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-ame-text">AI Logic Copilot</span>
+          </div>
+          <div className="flex gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+          </div>
         </div>
-        <div className="flex gap-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+        
+        <div className="flex items-center gap-2 bg-ame-bg/50 border border-ame-border px-2 py-1 rounded-sm">
+          <Sparkles className="w-3 h-3 text-ame-accent" />
+          <select 
+            value={aiModel}
+            onChange={(e) => setAiModel(e.target.value as any)}
+            className="flex-1 bg-transparent text-[9px] font-mono text-ame-text outline-none uppercase cursor-pointer"
+          >
+            <option value="gemini-3-flash" className="bg-ame-bg">Gemini 3 Flash (Fast)</option>
+            <option value="gemini-2.0-pro" className="bg-ame-bg">Gemini 2.0 Pro (Exp)</option>
+            <option value="gemini-1.5-flash" className="bg-ame-bg">Gemini 1.5 Flash (Legacy)</option>
+          </select>
         </div>
       </div>
 

@@ -54,6 +54,8 @@ interface EngineState {
   aiChatHistory: { role: 'user' | 'model'; parts: { text: string }[] }[];
   isAiLoading: boolean;
   isAiCopilotOpen: boolean;
+  aiModel: 'gemini-3-flash' | 'gemini-2.0-pro' | 'gemini-1.5-flash';
+  setAiModel: (model: 'gemini-3-flash' | 'gemini-2.0-pro' | 'gemini-1.5-flash') => void;
   setAiCopilotOpen: (open: boolean) => void;
   addAiMessage: (message: { role: 'user' | 'model'; parts: { text: string }[] }) => void;
   setAiLoading: (loading: boolean) => void;
@@ -442,6 +444,8 @@ export const useEngineStore = create<EngineState>((set) => ({
   ],
   isAiLoading: false,
   isAiCopilotOpen: false,
+  aiModel: 'gemini-3-flash',
+  setAiModel: (model) => set({ aiModel: model }),
   setAiCopilotOpen: (open) => set({ isAiCopilotOpen: open }),
   addAiMessage: (msg) => set((state) => ({ aiChatHistory: [...state.aiChatHistory, msg] })),
   setAiLoading: (loading) => set({ isAiLoading: loading }),
