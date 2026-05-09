@@ -1,6 +1,6 @@
 import React from 'react';
 import { useEngineStore, Theme } from '../store/useEngineStore';
-import { Palette } from 'lucide-react';
+import { Palette, Sparkles } from 'lucide-react';
 
 const themes: { id: Theme; color: string; bg?: string }[] = [
   { id: 'EMERALD', color: '#DEFF9A' },
@@ -13,7 +13,7 @@ const themes: { id: Theme; color: string; bg?: string }[] = [
 
 export const TopBar = () => {
   const stats = useEngineStore((state) => state.stats);
-  const { theme, setTheme } = useEngineStore();
+  const { theme, setTheme, isAiCopilotOpen, setAiCopilotOpen } = useEngineStore();
 
   return (
     <header className="h-10 border-ame-border border-b flex items-center justify-between px-3 bg-ame-panel-bg z-20">
@@ -76,6 +76,14 @@ export const TopBar = () => {
             ))}
           </div>
         </div>
+
+        <button 
+          onClick={() => setAiCopilotOpen(!isAiCopilotOpen)}
+          className={`flex items-center gap-1.5 px-2 py-1 border transition-all ${isAiCopilotOpen ? 'bg-ame-accent/20 border-ame-accent text-ame-accent shadow-[0_0_10px_rgba(167,243,208,0.1)]' : 'bg-slate-900/40 border-ame-border/40 text-slate-500 hover:text-ame-text hover:border-ame-border'}`}
+        >
+          <Sparkles className={`w-3.5 h-3.5 ${isAiCopilotOpen ? 'animate-pulse' : ''}`} />
+          <span className="text-[10px] font-bold font-mono tracking-tighter uppercase">AI Copilot</span>
+        </button>
 
         <div className="flex gap-3 font-mono text-[10px] uppercase">
           <div className="flex gap-1"><span className="text-slate-500">FPS</span><span className="text-ame-accent">{stats.fps}</span></div>

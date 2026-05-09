@@ -51,6 +51,12 @@ interface EngineState {
   workflowEdges: WorkflowEdge[];
   selectedWorkflowNodeId: string | null;
   workflowViewport: { x: number; y: number; zoom: number };
+  aiChatHistory: { role: 'user' | 'model'; parts: { text: string }[] }[];
+  isAiLoading: boolean;
+  isAiCopilotOpen: boolean;
+  setAiCopilotOpen: (open: boolean) => void;
+  addAiMessage: (message: { role: 'user' | 'model'; parts: { text: string }[] }) => void;
+  setAiLoading: (loading: boolean) => void;
   isStudioExpanded: boolean;
   isWorkflowRunning: boolean;
   setWorkflowRunning: (running: boolean) => void;
@@ -431,6 +437,14 @@ export const useEngineStore = create<EngineState>((set) => ({
   ],
   selectedWorkflowNodeId: null,
   workflowViewport: { x: 0, y: 0, zoom: 1 },
+  aiChatHistory: [
+    { role: 'model', parts: [{ text: "Hello! I am AMAR Copilot. I can help you build and debug workflows. What logic should we implement today?" }] }
+  ],
+  isAiLoading: false,
+  isAiCopilotOpen: false,
+  setAiCopilotOpen: (open) => set({ isAiCopilotOpen: open }),
+  addAiMessage: (msg) => set((state) => ({ aiChatHistory: [...state.aiChatHistory, msg] })),
+  setAiLoading: (loading) => set({ isAiLoading: loading }),
   isStudioExpanded: false,
   isWorkflowRunning: true,
   setWorkflowRunning: (running) => set({ isWorkflowRunning: running }),

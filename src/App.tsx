@@ -19,10 +19,11 @@ import { Inspector } from './components/Inspector';
 import { motion, AnimatePresence } from 'motion/react';
 import { useEngineStore } from './store/useEngineStore';
 import { StudioCanvas } from './components/StudioCanvas';
-import { GitBranch } from 'lucide-react';
+import { GitBranch, X } from 'lucide-react';
+import { AICopilot } from './components/AICopilot';
 
 export default function App() {
-  const { isStudioExpanded, setStudioExpanded } = useEngineStore();
+  const { isStudioExpanded, setStudioExpanded, isAiCopilotOpen, setAiCopilotOpen } = useEngineStore();
 
   return (
     <div className="h-screen w-screen flex flex-col bg-ame-bg text-ame-text selection:bg-ame-accent selection:text-ame-bg font-sans relative overflow-hidden">
@@ -58,6 +59,29 @@ export default function App() {
         </motion.div>
         
         <div className="flex-1 flex overflow-hidden relative">
+          {/* AI Copilot Sidebar Overlay */}
+          <AnimatePresence>
+            {isAiCopilotOpen && (
+              <motion.div
+                initial={{ x: 320 }}
+                animate={{ x: 0 }}
+                exit={{ x: 320 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="absolute top-0 right-0 bottom-0 z-[100] border-l border-ame-border shadow-[-10px_0_30px_rgba(0,0,0,0.5)] bg-ame-bg"
+              >
+                <AICopilot />
+                <button 
+                  onClick={() => setAiCopilotOpen(false)}
+                  className="absolute top-4 -left-8 p-1.5 bg-ame-bg border border-ame-border border-r-0 text-ame-muted hover:text-ame-accent transition-colors"
+                >
+                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                    <X className="w-5 h-5" />
+                  </motion.div>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <AnimatePresence mode="wait">
             {isStudioExpanded && (
               <motion.div 
