@@ -3,15 +3,31 @@ import { Stage, Layer, Group, Rect, Text, Path, Circle } from 'react-konva';
 import { useEngineStore } from '../store/useEngineStore';
 import { nanoid } from 'nanoid';
 import { WorkflowNode, WorkflowEdge, WorkflowPort } from '../types';
+import { 
+  Plus, 
+  Trash2, 
+  Play, 
+  Pause, 
+  Maximize2, 
+  Minimize2, 
+  Settings2, 
+  Database, 
+  Zap, 
+  Activity, 
+  GitBranch, 
+  Sparkles, 
+  Terminal,
+  Search
+} from 'lucide-react';
 
 const NODE_WIDTH = 180;
 const PORT_RADIUS = 5;
 const HEADER_HEIGHT = 24;
 
-const MenuButton = ({ onClick, label, accent }: { onClick: () => void, label: string, accent?: string }) => (
+const MenuButton = ({ onClick, label, accent, icon: Icon }: { onClick: () => void, label: string, accent?: string, icon?: any }) => (
   <button 
     onClick={onClick}
-    className="bg-ame-panel-bg/80 border px-3 py-1 text-[10px] font-bold font-mono hover:text-black transition-colors uppercase"
+    className="flex items-center gap-2 bg-ame-panel-bg/80 border px-3 py-1.5 text-[9px] font-bold font-mono hover:text-black transition-colors uppercase group whitespace-nowrap"
     style={{ 
       borderColor: accent || 'var(--ame-border)', 
       color: accent || 'var(--ame-text)',
@@ -24,9 +40,65 @@ const MenuButton = ({ onClick, label, accent }: { onClick: () => void, label: st
       e.currentTarget.style.backgroundColor = 'rgba(2, 2, 2, 0.8)';
     }}
   >
+    {Icon && <Icon className="w-3 h-3 group-hover:scale-110 transition-transform" style={{ color: accent }} />}
     {label}
   </button>
 );
+
+const NodeLibrary = ({ onAdd, accentColor }: { onAdd: (node: any) => void, accentColor: string }) => {
+  const [search, setSearch] = useState('');
+  
+  const nodes = [
+    { type: 'AI_INFERENCE', category: 'AI', name: 'Gemini Lens', icon: Sparkles, color: accentColor, inputs: [{name: 'Prompt', dataType: 'DATA'}], outputs: [{name: 'Result', dataType: 'DATA'}]},
+    { type: 'MATH_THRESHOLD', category: 'MATH', name: 'Threshold', icon: Zap, color: '#fb923c', inputs: [{name: 'In', dataType: 'SIGNAL'}], outputs: [{name: 'Above', dataType: 'SIGNAL'}, {name: 'Below', dataType: 'SIGNAL'}]},
+    { type: 'LOGIC_AND', category: 'LOGIC', name: 'Logic AND', icon: GitBranch, color: '#a855f7', inputs: [{name: 'A', dataType: 'SIGNAL'}, {name: 'B', dataType: 'SIGNAL'}], outputs: [{name: 'Out', dataType: 'SIGNAL'}]},
+    { type: 'LOGIC_OR', category: 'LOGIC', name: 'Logic OR', icon: GitBranch, color: '#a855f7', inputs: [{name: 'A', dataType: 'SIGNAL'}, {name: 'B', dataType: 'SIGNAL'}], outputs: [{name: 'Out', dataType: 'SIGNAL'}]},
+    { type: 'SENSOR_LIDAR', category: 'SENSOR', name: 'Lidar Input', icon: Database, color: '#3b82f6', inputs: [], outputs: [{name: 'Cloud', dataType: 'SENSOR'}]},
+    { type: 'ACTION_BRAKE', category: 'ACTION', name: 'Brake Cmd', icon: Activity, color: '#f43f5e', inputs: [{name: 'Trigger', dataType: 'SIGNAL'}], outputs: []},
+  ];
+
+  const filtered = nodes.filter(n => n.name.toLowerCase().includes(search.toLowerCase()) || n.type.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div className="absolute top-4 left-4 flex flex-col gap-3 w-64">
+      <div className="bg-ame-panel-bg/90 border border-ame-border p-3 backdrop-blur-md">
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <Terminal className="w-3 h-3 text-ame-accent" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-ame-text">Node Library</span>
+        </div>
+        <div className="relative mb-3">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-ame-muted" />
+          <input 
+            type="text" 
+            placeholder="Search nodes..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-ame-bg/50 border border-ame-border px-7 py-1.5 text-[9px] font-mono text-ame-text outline-none focus:border-ame-accent transition-colors"
+          />
+        </div>
+        <div className="space-y-1 max-h-60 overflow-y-auto no-scrollbar">
+          {filtered.map(node => (
+            <MenuButton 
+              key={node.type}
+              onClick={() => onAdd({
+                type: node.type,
+                category: node.category,
+                name: node.name,
+                position: { x: 400, y: 300 },
+                inputs: node.inputs.map(i => ({ ...i, id: nanoid(), type: 'IN' })),
+                outputs: node.outputs.map(o => ({ ...o, id: nanoid(), type: 'OUT' })),
+                data: {}
+              })}
+              label={node.name}
+              accent={node.color}
+              icon={node.icon}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const StudioCanvas = () => {
   const { 
@@ -34,8 +106,8 @@ export const StudioCanvas = () => {
     workflowEdges, 
     updateWorkflowNode, 
     connectPorts, 
-    removeWorkflowEdge, 
-    removeWorkflowNode,
+    deleteWorkflowEdge, 
+    deleteWorkflowNode,
     isStudioExpanded, 
     setStudioExpanded, 
     addWorkflowNode,
@@ -93,16 +165,16 @@ export const StudioCanvas = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
         if (selectedId.startsWith('node_')) {
-          removeWorkflowNode(selectedId);
+          deleteWorkflowNode(selectedId);
         } else if (selectedId.startsWith('edge_')) {
-          removeWorkflowEdge(selectedId);
+          deleteWorkflowEdge(selectedId);
         }
         setSelectedId(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedId, removeWorkflowNode, removeWorkflowEdge]);
+  }, [selectedId, deleteWorkflowNode, deleteWorkflowEdge]);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -246,6 +318,8 @@ export const StudioCanvas = () => {
                   data={drawBezier(fromPos.x, fromPos.y, toPos.x, toPos.y)}
                   stroke={selectedId === edge.id ? accentColor : `${accentColor}22`}
                   strokeWidth={2}
+                  dash={isWorkflowRunning ? [8, 4] : undefined}
+                  dashOffset={-dashOffset}
                   onClick={(e) => {
                     e.cancelBubble = true;
                     setSelectedId(edge.id);
@@ -415,49 +489,12 @@ export const StudioCanvas = () => {
       </Stage>
 
       {/* Control Overlay */}
-      <div className="absolute top-4 left-4 flex flex-col gap-2">
-        <div className="flex gap-2">
-          <MenuButton 
-            onClick={() => addWorkflowNode({
-              type: 'LOGIC_AND',
-              category: 'LOGIC',
-              name: 'Logic_And',
-              position: { x: (100 - workflowViewport.x) / workflowViewport.zoom, y: (100 - workflowViewport.y) / workflowViewport.zoom },
-              inputs: [{ id: nanoid(), name: 'A', type: 'IN', dataType: 'DATA' }, { id: nanoid(), name: 'B', type: 'IN', dataType: 'DATA' }],
-              outputs: [{ id: nanoid(), name: 'OUT', type: 'OUT', dataType: 'DATA' }],
-              data: {}
-            })}
-            label="+ And Gate"
-            accent="#a855f7"
-          />
-          <MenuButton 
-            onClick={() => addWorkflowNode({
-              type: 'MATH_ABS',
-              category: 'MATH',
-              name: 'Absolute',
-              position: { x: (150 - workflowViewport.x) / workflowViewport.zoom, y: (150 - workflowViewport.y) / workflowViewport.zoom },
-              inputs: [{ id: nanoid(), name: 'VAL', type: 'IN', dataType: 'DATA' }],
-              outputs: [{ id: nanoid(), name: 'ABS', type: 'OUT', dataType: 'DATA' }],
-              data: {}
-            })}
-            label="+ Abs Node"
-            accent="#fb923c"
-          />
-           <MenuButton 
-            onClick={() => addWorkflowNode({
-              type: 'AI_INFERENCE',
-              category: 'AI',
-              name: 'Inference',
-              position: { x: (200 - workflowViewport.x) / workflowViewport.zoom, y: (200 - workflowViewport.y) / workflowViewport.zoom },
-              inputs: [{ id: nanoid(), name: 'PROMPT', type: 'IN', dataType: 'DATA' }],
-              outputs: [{ id: nanoid(), name: 'RESULT', type: 'OUT', dataType: 'DATA' }],
-              data: { model: 'gpt-4o' }
-            })}
-            label="+ AI Node"
-            accent={accentColor}
-          />
-        </div>
+      <NodeLibrary 
+        onAdd={(n) => addWorkflowNode(n)} 
+        accentColor={accentColor} 
+      />
 
+      <div className="absolute top-4 right-4 flex flex-col gap-2">
         <div className="flex gap-2">
           {!isStudioExpanded && (
             <button 

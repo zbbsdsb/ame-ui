@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Settings2, Activity, Database, Zap } from 'lucide-react';
+import { Settings2, Activity, Database, Zap, X } from 'lucide-react';
 import { PanelHeader } from './PanelHeader';
 import { useEngineStore } from '../store/useEngineStore';
 import { Facet } from '../types';
 
 export const Inspector = () => {
-  const { nodes, selectedNodeId, updateNode, workflowNodes, selectedWorkflowNodeId, updateWorkflowNode } = useEngineStore();
+  const { nodes, selectedNodeId, updateNode, workflowNodes, selectedWorkflowNodeId, updateWorkflowNode, deleteWorkflowNode } = useEngineStore();
   const selectedNode = nodes.find(n => n.id === selectedNodeId);
   const selectedWorkflowNode = workflowNodes.find(n => n.id === selectedWorkflowNodeId);
 
@@ -84,7 +84,17 @@ export const Inspector = () => {
               </div>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="pt-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="pt-4 border-t border-ame-border/30">
+              <button 
+                onClick={() => deleteWorkflowNode(selectedWorkflowNode.id)}
+                className="w-full py-2 bg-rose-500/10 border border-rose-500/30 text-rose-500 text-[10px] font-bold font-mono uppercase hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-2"
+              >
+                <X className="w-3 h-3" />
+                Destroy Node
+              </button>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="pt-2">
               <div className="ame-label mb-2 uppercase tracking-widest text-[9px]">Port Interface</div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
