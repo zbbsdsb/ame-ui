@@ -13,7 +13,16 @@ const themes: { id: Theme; color: string; bg?: string }[] = [
 
 export const TopBar = () => {
   const stats = useEngineStore((state) => state.stats);
-  const { theme, setTheme, rightSidebarTab, setRightSidebarTab, isWorldStitcherOpen, setWorldStitcherOpen } = useEngineStore();
+  const { 
+    theme, 
+    setTheme, 
+    rightSidebarTab, 
+    setRightSidebarTab, 
+    isWorldStitcherOpen, 
+    setWorldStitcherOpen,
+    isWorkflowRunning,
+    setWorkflowRunning
+  } = useEngineStore();
 
   return (
     <header className="h-10 border-ame-border border-b flex items-center justify-between px-3 bg-ame-panel-bg z-20">
@@ -30,13 +39,18 @@ export const TopBar = () => {
           </div>
           <div className="h-4 w-px bg-slate-800"></div>
           <div className="flex items-center gap-4 border-l border-slate-800 pl-4">
-            <div className="flex flex-col">
-              <span className="text-[8px] text-slate-500 font-mono uppercase tracking-widest leading-none mb-1">AMAR Master</span>
+            <button 
+              onClick={() => setWorkflowRunning(!isWorkflowRunning)}
+              className="flex flex-col text-left group transition-all"
+            >
+              <span className="text-[8px] text-slate-500 font-mono uppercase tracking-widest leading-none mb-1 group-hover:text-ame-accent">Runtime Core</span>
               <div className="flex items-center gap-1.5 leading-none">
-                <div className="w-1 h-1 rounded-full bg-ame-accent shadow-[0_0_8px_var(--ame-accent)]" />
-                <span className="text-[10px] font-bold text-ame-text font-mono tracking-tighter">THREAD_0_OK</span>
+                <div className={`w-1 h-1 rounded-full ${isWorkflowRunning ? 'bg-ame-accent shadow-[0_0_8px_var(--ame-accent)] uppercase' : 'bg-slate-600'}`} />
+                <span className={`text-[10px] font-bold font-mono tracking-tighter ${isWorkflowRunning ? 'text-ame-text' : 'text-slate-500'}`}>
+                  {isWorkflowRunning ? 'PROCESS_LIVE' : 'IDLE_HALT'}
+                </span>
               </div>
-            </div>
+            </button>
             
             <div className="h-6 w-px bg-slate-800"></div>
 

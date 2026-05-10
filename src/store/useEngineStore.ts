@@ -67,7 +67,9 @@ interface EngineState {
   setAiLoading: (loading: boolean) => void;
   isStudioExpanded: boolean;
   isWorkflowRunning: boolean;
+  executingNodeIds: Set<string>;
   setWorkflowRunning: (running: boolean) => void;
+  executeWorkflow: () => Promise<void>;
   setStudioExpanded: (expanded: boolean) => void;
   setSelectedWorkflowNodeCard: (id: string | null) => void;
   setWorkflowViewport: (viewport: { x: number; y: number; zoom: number }) => void;
@@ -487,8 +489,54 @@ export const useEngineStore = create<EngineState>((set) => ({
   addAiMessage: (msg) => set((state) => ({ aiChatHistory: [...state.aiChatHistory, msg] })),
   setAiLoading: (loading) => set({ isAiLoading: loading }),
   isStudioExpanded: false,
-  isWorkflowRunning: true,
+  isWorkflowRunning: false,
+  executingNodeIds: new Set(),
   setWorkflowRunning: (running) => set({ isWorkflowRunning: running }),
+  executeWorkflow: async () => {
+    const state = get();
+    if (!state.isWorkflowRunning) return;
+
+    // Reset executing state
+    set({ executingNodeIds: new Set() });
+
+    // Simple BFS/Topological execution simulation
+    const queue = state.workflowNodes.filter(n => n.inputs.length === 0);
+    const completed = new Set<string>();
+
+    while (queue.length > 0) {
+      const node = queue.shift()!;
+      if (completed.has(node.id)) continue;
+
+      // Mark as executing
+      set((s) => ({ executingNodeIds: new Set([...s.executingNodeIds, node.id]) }));
+      
+      // Simulate processing time
+      await new Promise(r => setTimeout(r, 200 + Math.random() * 300));
+
+      // Calculate logic (simplified)
+      let outData = { ...node.data };
+      if (node.type === 'LOGIC_AND') {
+        const edgeA = state.workflowEdges.find(e => e.toNodeId === node.id && e.toPortId === node.inputs[0]?.id);
+        const edgeB = state.workflowEdges.find(e => e.toNodeId === node.id && e.toPortId === node.inputs[1]?.id);
+        // data.value would be fetched from parent nodes in a real impl
+        outData.value = true; 
+      }
+
+      completed.add(node.id);
+
+      // Find children
+      const childrenEdges = state.workflowEdges.filter(e => e.fromNodeId === node.id);
+      childrenEdges.forEach(edge => {
+        const childNode = state.workflowNodes.find(n => n.id === edge.toNodeId);
+        if (childNode) queue.push(childNode);
+      });
+
+      // Remove from executing
+      set((s) => ({ 
+        executingNodeIds: new Set([...s.executingNodeIds].filter(id => id !== node.id)) 
+      }));
+    }
+  },
   setStudioExpanded: (expanded) => set({ isStudioExpanded: expanded }),
   setSelectedWorkflowNodeCard: (id) => set({ selectedWorkflowNodeId: id }),
   setWorkflowViewport: (viewport) => set({ workflowViewport: viewport }),

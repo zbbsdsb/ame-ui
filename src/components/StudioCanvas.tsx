@@ -113,6 +113,8 @@ export const StudioCanvas = () => {
     addWorkflowNode,
     isWorkflowRunning,
     setWorkflowRunning,
+    executeWorkflow,
+    executingNodeIds,
     theme,
     workflowViewport,
     setWorkflowViewport,
@@ -160,6 +162,22 @@ export const StudioCanvas = () => {
     animId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animId);
   }, [isWorkflowRunning]);
+
+  useEffect(() => {
+    let timeoutId: any;
+    if (isWorkflowRunning) {
+      const run = async () => {
+        await executeWorkflow();
+        if (isWorkflowRunning) {
+          timeoutId = setTimeout(run, 100);
+        }
+      };
+      timeoutId = setTimeout(run, 100);
+    }
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [isWorkflowRunning, executeWorkflow]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -377,6 +395,7 @@ export const StudioCanvas = () => {
           {/* Nodes */}
           {workflowNodes.map(node => {
             const isSelected = selectedId === node.id || selectedWorkflowNodeId === node.id;
+            const isExecuting = executingNodeIds.has(node.id);
             const categoryColor = CATEGORY_COLORS[node.category || 'LOGIC'] || '#64748b';
 
             return (
@@ -397,11 +416,11 @@ export const StudioCanvas = () => {
                   width={NODE_WIDTH}
                   height={60 + Math.max(node.inputs.length, node.outputs.length) * 20}
                   fill={isSnow ? "#f1f5f9" : "#0a0a0a"}
-                  stroke={isSelected ? accentColor : (isSnow ? '#e2e8f0' : '#1e293b')}
-                  strokeWidth={isSelected ? 2 : 1}
+                  stroke={isExecuting ? accentColor : (isSelected ? accentColor : (isSnow ? '#e2e8f0' : '#1e293b'))}
+                  strokeWidth={isExecuting ? 2 : (isSelected ? 2 : 1)}
                   cornerRadius={2}
-                  shadowBlur={isSelected ? 20 : 0}
-                  shadowColor={`${accentColor}33`}
+                  shadowBlur={isExecuting ? 25 : (isSelected ? 20 : 0)}
+                  shadowColor={`${accentColor}${isExecuting ? 'aa' : '33'}`}
                   opacity={0}
                   onMouseEnter={(e) => {
                     const stage = e.target.getStage();

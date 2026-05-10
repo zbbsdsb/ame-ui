@@ -13,7 +13,14 @@ import { Inspector } from './Inspector';
 import { AICopilot } from './AICopilot';
 
 export const RightSidebar = () => {
-  const { rightSidebarTab: activeTab, setRightSidebarTab: setActiveTab } = useEngineStore();
+  const { 
+    rightSidebarTab: activeTab, 
+    setRightSidebarTab: setActiveTab,
+    isWorkflowRunning,
+    executingNodeIds,
+    workflowNodes,
+    workflowEdges
+  } = useEngineStore();
   
   const tabs = [
     { id: 'PROPERTIES', icon: Settings2, label: 'Prop' },
@@ -102,8 +109,8 @@ export const RightSidebar = () => {
                 {[
                   { label: 'Neural Throughput', value: '1.24 GB/s', color: 'text-ame-accent' },
                   { label: 'Spatial Buffer', value: '84%', color: 'text-ame-text' },
-                  { label: 'Vertex Overflow', value: '0.00%', color: 'text-emerald-500' },
-                  { label: 'Compute Latency', value: '4.2ms', color: 'text-ame-accent' },
+                  { label: 'Nodes Active', value: `${executingNodeIds.size}/${workflowNodes.length}`, color: isWorkflowRunning ? 'text-ame-accent' : 'text-ame-muted' },
+                  { label: 'Compute Latency', value: isWorkflowRunning ? '240ms' : '0.0ms', color: isWorkflowRunning ? 'text-ame-accent' : 'text-ame-muted' },
                 ].map(stat => (
                   <div key={stat.label} className="ame-panel p-2 flex justify-between items-center bg-ame-bg/40">
                     <span className="ame-label text-[8px] uppercase">{stat.label}</span>
