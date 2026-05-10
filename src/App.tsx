@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   Panel, 
   Group as PanelGroup, 
@@ -23,9 +23,30 @@ import { GitBranch, X, GitMerge } from 'lucide-react';
 import { AICopilot } from './components/AICopilot';
 import { WorldStitcher } from './components/WorldStitcher';
 import { RightSidebar } from './components/RightSidebar';
+import { MetaConsole } from './components/MetaConsole';
 
 export default function App() {
-  const { isStudioExpanded, setStudioExpanded, isAiCopilotOpen, setAiCopilotOpen, isWorldStitcherOpen, setWorldStitcherOpen } = useEngineStore();
+  const { 
+    isStudioExpanded, 
+    setStudioExpanded, 
+    isAiCopilotOpen, 
+    setAiCopilotOpen, 
+    isWorldStitcherOpen, 
+    setWorldStitcherOpen,
+    isMetaConsoleOpen,
+    setMetaConsoleOpen
+  } = useEngineStore();
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setMetaConsoleOpen(!isMetaConsoleOpen);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMetaConsoleOpen, setMetaConsoleOpen]);
 
   return (
     <div className="h-screen w-screen flex flex-col bg-ame-bg text-ame-text selection:bg-ame-accent selection:text-ame-bg font-sans relative overflow-hidden">
@@ -57,7 +78,10 @@ export default function App() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <TopBar />
+          {/* Meta Console Overlay */}
+      <MetaConsole />
+
+      <TopBar />
         </motion.div>
         
         <div className="flex-1 flex overflow-hidden relative">

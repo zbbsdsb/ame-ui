@@ -55,11 +55,13 @@ interface EngineState {
   isAiLoading: boolean;
   isAiCopilotOpen: boolean;
   isWorldStitcherOpen: boolean;
+  isMetaConsoleOpen: boolean;
   rightSidebarTab: 'PROPERTIES' | 'AI_COPILOT' | 'DIAGNOSTICS';
   aiModel: 'gemini-3-flash' | 'gemini-2.0-pro' | 'gemini-1.5-flash';
   setAiModel: (model: 'gemini-3-flash' | 'gemini-2.0-pro' | 'gemini-1.5-flash') => void;
   setAiCopilotOpen: (open: boolean) => void;
   setWorldStitcherOpen: (open: boolean) => void;
+  setMetaConsoleOpen: (open: boolean) => void;
   setRightSidebarTab: (tab: 'PROPERTIES' | 'AI_COPILOT' | 'DIAGNOSTICS') => void;
   addAiMessage: (message: { role: 'user' | 'model'; parts: { text: string }[] }) => void;
   setAiLoading: (loading: boolean) => void;
@@ -474,11 +476,13 @@ export const useEngineStore = create<EngineState>((set) => ({
   isAiLoading: false,
   isAiCopilotOpen: false,
   isWorldStitcherOpen: false,
+  isMetaConsoleOpen: false,
   rightSidebarTab: 'PROPERTIES',
   aiModel: 'gemini-3-flash',
   setAiModel: (model) => set({ aiModel: model }),
   setAiCopilotOpen: (open) => set({ isAiCopilotOpen: open }),
   setWorldStitcherOpen: (open) => set({ isWorldStitcherOpen: open }),
+  setMetaConsoleOpen: (open) => set({ isMetaConsoleOpen: open }),
   setRightSidebarTab: (tab) => set({ rightSidebarTab: tab }),
   addAiMessage: (msg) => set((state) => ({ aiChatHistory: [...state.aiChatHistory, msg] })),
   setAiLoading: (loading) => set({ isAiLoading: loading }),
