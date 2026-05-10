@@ -29,9 +29,16 @@ The **Meta Console** uses a command-processing architecture.
 The Canvas uses `react-konva` for a declarative approach to the 2D scene.
 - **Coordinate System**: Uses absolute canvas coordinates.
 - **Port Logic**: Ports are defined within `WorkflowNode`. Edges connect `fromNodeId:fromPortId` to `toNodeId:toPortId`.
-- **Scaling**: The stage is draggable and supports coordinate transformation logic.
+- **Scaling**: The stage is draggable and supports coordinate transformation logic (Viewport zoom/pan state).
 
-## 4. Facet-Based Inspector
+## 4. AI Copilot Integration (@google/genai)
+The AI Copilot is a side-bar overlay that communicates with the AMAR State Store.
+- **Function Calling**: Uses Gemini's function calling capability to bridge natural language to system actions. Currently supports `create_node`.
+- **Schema Validation**: AI-generated nodes are validated against the `WorkflowNode` interface before being injected into the Zustand store.
+- **Context Handling**: Chat history is preserved in chunks to provide context for iterative workflow refinement.
+- **Multi-Model Routing**: Supports dynamic switching between Gemini 3 Flash, 2.0 Pro, and 1.5 Flash based on user selection.
+
+## 5. Facet-Based Inspector
 The Inspector is modular. Each `SceneNode` has an array of `facets`. 
 - **Facet Types**: `Visual`, `Physics`, `Sensor`, `Provenance`.
 - **Custom Facets**: To add a new parameter block, define a new `FacetType` in `/src/types.ts` and update the `FacetPanel` component in `/src/components/Inspector.tsx`.

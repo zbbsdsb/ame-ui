@@ -1,6 +1,6 @@
 {
   "name": "AME Engine UI",
-  "description": "Industrial-grade world building engine interface for 3DGS scanning data based on Swiss minimalist and hardcore technical aesthetics.",
+  "description": "Industrial-grade interface for AMAR Engine, featuring high-density workstation layouts, a canvas-based Workflow Studio, and an AI Logic Copilot with multi-model support.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }

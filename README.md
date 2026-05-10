@@ -28,6 +28,7 @@ AME UI prioritizes data visibility and operational velocity over "breathing room
 - **Graphics & Workflow**: 
   - `motion`: Animation and fluid UI transitions.
   - `konva` / `react-konva`: Canvas-based engine for high-performance node editors.
+  - `@google/genai`: Integration for LLM-powered logic assistance and node generation.
 - **Layout**: `react-resizable-panels` for flexible workstation configuration.
 - **Icons**: Lucide React (Industrial subset)
 
@@ -54,6 +55,19 @@ The interface is divided into functional zones:
 4. **Inspector**: Multi-facet property editor (Visual, Physics, Sensor, Provenance).
 5. **Meta Console**: Command-line interface with meta-search capabilities for fast node/asset discovery.
 6. **Workflow Studio**: Advanced canvas-based node editor for designing data pipelines and AI logic.
+7. **AI Logic Copilot**: Integrated LLM assistant that can understand natural language intent and directly manipulate the workflow canvas by generating nodes and logic gates.
+
+---
+
+## 🤖 AI Capabilities
+
+AME Engine UI is augmented by a multi-model AI Copilot system:
+- **Direct Canvas Manipulation**: Create complex logic gates, filters, and AI inference nodes via natural language commands (e.g., "Add a depth threshold filter for the Lidar stream").
+- **Multi-Model Support**:
+  - **Gemini 3 Flash**: Default high-speed model for instant node generation and logic checks.
+  - **Gemini 2.0 Pro**: Advanced experimental model for complex procedural reasoning.
+  - **Gemini 1.5 Flash**: Stable legacy model for standard assistance.
+- **Context Awareness**: The Copilot understands the current canvas state, including existing nodes and connections, to provide relevant suggestions.
 
 ---
 
