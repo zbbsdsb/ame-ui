@@ -13,9 +13,8 @@ export const Inspector = () => {
   if (!selectedNode && !selectedWorkflowNode) {
     return (
       <div className="h-full flex flex-col bg-ame-bg">
-        <PanelHeader title="Inspector" icon={Settings2} />
-        <div className="flex-1 flex items-center justify-center font-mono text-[10px] text-ame-muted uppercase">
-          No Selection
+        <div className="flex-1 flex items-center justify-center font-mono text-[9px] text-ame-muted uppercase opacity-40">
+          Sync_Error: No_Target_Selection
         </div>
       </div>
     );

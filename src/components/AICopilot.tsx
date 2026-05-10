@@ -114,30 +114,21 @@ export const AICopilot = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-ame-bg border-l border-ame-border w-80">
-      <div className="p-4 border-b border-ame-border flex flex-col gap-3 bg-ame-panel-bg/20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BrainCircuit className="w-4 h-4 text-ame-accent animate-pulse" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-ame-text">AI Logic Copilot</span>
-          </div>
-          <div className="flex gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-          </div>
+    <div className="flex flex-col h-full bg-ame-bg">
+      <div className="px-4 py-2 border-b border-ame-border/30 bg-ame-panel-bg/10 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <BrainCircuit className="w-3 h-3 text-ame-accent" />
+          <span className="text-[8px] font-bold uppercase tracking-widest text-ame-muted">Core_Neural_Link</span>
         </div>
-        
-        <div className="flex items-center gap-2 bg-ame-bg/50 border border-ame-border px-2 py-1 rounded-sm">
-          <Sparkles className="w-3 h-3 text-ame-accent" />
-          <select 
-            value={aiModel}
-            onChange={(e) => setAiModel(e.target.value as any)}
-            className="flex-1 bg-transparent text-[9px] font-mono text-ame-text outline-none uppercase cursor-pointer"
-          >
-            <option value="gemini-3-flash" className="bg-ame-bg">Gemini 3 Flash (Fast)</option>
-            <option value="gemini-2.0-pro" className="bg-ame-bg">Gemini 2.0 Pro (Exp)</option>
-            <option value="gemini-1.5-flash" className="bg-ame-bg">Gemini 1.5 Flash (Legacy)</option>
-          </select>
-        </div>
+        <select 
+          value={aiModel}
+          onChange={(e) => setAiModel(e.target.value as any)}
+          className="bg-transparent text-[8px] font-mono text-ame-accent outline-none uppercase cursor-pointer border-l border-ame-border pl-2"
+        >
+          <option value="gemini-3-flash" className="bg-ame-bg">3-Flash</option>
+          <option value="gemini-2.0-pro" className="bg-ame-bg">2.0-Pro</option>
+          <option value="gemini-1.5-flash" className="bg-ame-bg">1.5-Flash</option>
+        </select>
       </div>
 
       {/* Chat Area */}

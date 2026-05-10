@@ -54,9 +54,13 @@ interface EngineState {
   aiChatHistory: { role: 'user' | 'model'; parts: { text: string }[] }[];
   isAiLoading: boolean;
   isAiCopilotOpen: boolean;
+  isWorldStitcherOpen: boolean;
+  rightSidebarTab: 'PROPERTIES' | 'AI_COPILOT' | 'DIAGNOSTICS';
   aiModel: 'gemini-3-flash' | 'gemini-2.0-pro' | 'gemini-1.5-flash';
   setAiModel: (model: 'gemini-3-flash' | 'gemini-2.0-pro' | 'gemini-1.5-flash') => void;
   setAiCopilotOpen: (open: boolean) => void;
+  setWorldStitcherOpen: (open: boolean) => void;
+  setRightSidebarTab: (tab: 'PROPERTIES' | 'AI_COPILOT' | 'DIAGNOSTICS') => void;
   addAiMessage: (message: { role: 'user' | 'model'; parts: { text: string }[] }) => void;
   setAiLoading: (loading: boolean) => void;
   isStudioExpanded: boolean;
@@ -147,6 +151,31 @@ const INITIAL_NODES: SceneNode[] = [
         schema: 'os.metaclass', 
         status: 'DIRTY', 
         data: { class: 'Environment', tags: ['Indoor', 'Scan'] } 
+      }
+    ]
+  },
+  {
+    id: 'aeid.3dgs.02',
+    name: '3dgs_mesh_data_02',
+    parentId: 'aeid.root',
+    facets: [
+      { 
+        type: 'Visual', 
+        schema: 'mesh.3dgs', 
+        status: 'SYNCHRONIZED', 
+        data: { 
+          position: [5.20, 1.42, 2.10], 
+          rotation: [0, -45, 0], 
+          scale: [1, 1, 1],
+          points: 1842091,
+          pointScale: 1.050 
+        } 
+      },
+      { 
+        type: 'Semantic', 
+        schema: 'os.metaclass', 
+        status: 'STALE', 
+        data: { class: 'Object', tags: ['Furniture', 'Table'] } 
       }
     ]
   },
@@ -444,9 +473,13 @@ export const useEngineStore = create<EngineState>((set) => ({
   ],
   isAiLoading: false,
   isAiCopilotOpen: false,
+  isWorldStitcherOpen: false,
+  rightSidebarTab: 'PROPERTIES',
   aiModel: 'gemini-3-flash',
   setAiModel: (model) => set({ aiModel: model }),
   setAiCopilotOpen: (open) => set({ isAiCopilotOpen: open }),
+  setWorldStitcherOpen: (open) => set({ isWorldStitcherOpen: open }),
+  setRightSidebarTab: (tab) => set({ rightSidebarTab: tab }),
   addAiMessage: (msg) => set((state) => ({ aiChatHistory: [...state.aiChatHistory, msg] })),
   setAiLoading: (loading) => set({ isAiLoading: loading }),
   isStudioExpanded: false,

@@ -19,11 +19,13 @@ import { Inspector } from './components/Inspector';
 import { motion, AnimatePresence } from 'motion/react';
 import { useEngineStore } from './store/useEngineStore';
 import { StudioCanvas } from './components/StudioCanvas';
-import { GitBranch, X } from 'lucide-react';
+import { GitBranch, X, GitMerge } from 'lucide-react';
 import { AICopilot } from './components/AICopilot';
+import { WorldStitcher } from './components/WorldStitcher';
+import { RightSidebar } from './components/RightSidebar';
 
 export default function App() {
-  const { isStudioExpanded, setStudioExpanded, isAiCopilotOpen, setAiCopilotOpen } = useEngineStore();
+  const { isStudioExpanded, setStudioExpanded, isAiCopilotOpen, setAiCopilotOpen, isWorldStitcherOpen, setWorldStitcherOpen } = useEngineStore();
 
   return (
     <div className="h-screen w-screen flex flex-col bg-ame-bg text-ame-text selection:bg-ame-accent selection:text-ame-bg font-sans relative overflow-hidden">
@@ -59,20 +61,20 @@ export default function App() {
         </motion.div>
         
         <div className="flex-1 flex overflow-hidden relative">
-          {/* AI Copilot Sidebar Overlay */}
+          {/* World Stitcher Sidebar Overlay */}
           <AnimatePresence>
-            {isAiCopilotOpen && (
+            {isWorldStitcherOpen && (
               <motion.div
-                initial={{ x: 320 }}
+                initial={{ x: -320 }}
                 animate={{ x: 0 }}
-                exit={{ x: 320 }}
+                exit={{ x: -320 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="absolute top-0 right-0 bottom-0 z-[100] border-l border-ame-border shadow-[-10px_0_30px_rgba(0,0,0,0.5)] bg-ame-bg"
+                className="absolute top-0 left-0 bottom-0 z-[100] border-r border-ame-border shadow-[10px_0_30px_rgba(0,0,0,0.5)] bg-ame-bg"
               >
-                <AICopilot />
+                <WorldStitcher />
                 <button 
-                  onClick={() => setAiCopilotOpen(false)}
-                  className="absolute top-4 -left-8 p-1.5 bg-ame-bg border border-ame-border border-r-0 text-ame-muted hover:text-ame-accent transition-colors"
+                  onClick={() => setWorldStitcherOpen(false)}
+                  className="absolute top-4 -right-8 p-1.5 bg-ame-bg border border-ame-border border-l-0 text-ame-muted hover:text-ame-accent transition-colors"
                 >
                   <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                     <X className="w-5 h-5" />
@@ -166,15 +168,15 @@ export default function App() {
               
               <ResizeHandle direction="horizontal" />
               
-              {/* Right Panel: Inspector */}
-              <Panel defaultSize={25} minSize={15} className="border-l border-ame-border">
+              {/* Right Panel: Modular Sidebar */}
+              <Panel defaultSize={25} minSize={15}>
                 <motion.div 
                   className="h-full"
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <Inspector />
+                  <RightSidebar />
                 </motion.div>
               </Panel>
             </PanelGroup>
