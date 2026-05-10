@@ -84,6 +84,7 @@ interface EngineState {
   selectedNodeId: string | null;
   selectNode: (id: string | null) => void;
   updateNode: (id: string, updates: Partial<SceneNode>) => void;
+  updateNodeFacet: (nodeId: string, facetType: string, data: any) => void;
   
   // Console
   logs: LogEntry[];
@@ -204,7 +205,7 @@ const INITIAL_NODES: SceneNode[] = [
   }
 ];
 
-export const useEngineStore = create<EngineState>((set) => ({
+export const useEngineStore = create<EngineState>((set, get) => ({
   // Meta Actions
   assets: [
     { id: 'as_001', name: 'CYBER_CORE_MESH', type: 'MESH', status: 'LOADED' },
@@ -278,6 +279,15 @@ export const useEngineStore = create<EngineState>((set) => ({
   setGizmoMode: (mode) => set({ gizmoMode: mode }),
   updateNode: (id, updates) => set((state) => ({
     nodes: state.nodes.map(node => node.id === id ? { ...node, ...updates } : node)
+  })),
+  updateNodeFacet: (nodeId, facetType, data) => set((state) => ({
+    nodes: state.nodes.map((n) => {
+      if (n.id !== nodeId) return n;
+      return {
+        ...n,
+        facets: n.facets.map(f => f.type === facetType ? { ...f, data: { ...f.data, ...data }, status: 'SYNCHRONIZED' } : f)
+      };
+    })
   })),
   
   logs: [

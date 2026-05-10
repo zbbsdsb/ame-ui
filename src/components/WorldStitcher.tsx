@@ -20,9 +20,10 @@ import { useEngineStore } from '../store/useEngineStore';
 import { PanelHeader } from './PanelHeader';
 
 export const WorldStitcher = () => {
-  const { nodes, updateNode } = useEngineStore();
+  const { nodes, updateNodeFacet, addLog } = useEngineStore();
   const [activeSession, setActiveSession] = useState<string[]>([]);
   const [pivotNodeId, setPivotNodeId] = useState<string | null>(null);
+  const [isAligning, setIsAligning] = useState(false);
 
   // Filter nodes that are stitchable (3DGS meshes)
   const stitchableNodes = nodes.filter(n => n.facets.some(f => f.type === 'Visual'));
@@ -34,6 +35,53 @@ export const WorldStitcher = () => {
     if (!pivotNodeId && !activeSession.includes(id)) {
       setPivotNodeId(id);
     }
+  };
+
+  const handleSpatialChange = (nodeId: string, axis: 'X' | 'Y' | 'Z' | 'R' | 'P' | 'Y', value: string) => {
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) return;
+
+    const node = nodes.find(n => n.id === nodeId);
+    const visual = node?.facets.find(f => f.type === 'Visual');
+    if (!visual) return;
+
+    const isRotation = ['R', 'P', 'Y'].includes(axis);
+    const index = isRotation ? ['R', 'P', 'Y'].indexOf(axis) : ['X', 'Y', 'Z'].indexOf(axis);
+
+    const newData = isRotation 
+      ? { rotation: [...visual.data.rotation] } 
+      : { position: [...visual.data.position] };
+
+    if (isRotation) {
+      newData.rotation![index] = numValue;
+    } else {
+      newData.position![index] = numValue;
+    }
+
+    updateNodeFacet(nodeId, 'Visual', newData);
+  };
+
+  const handleAutoAlign = () => {
+    if (activeSession.length < 2) return;
+    setIsAligning(true);
+    addLog({ source: '3DGS', level: 'WNG', message: 'OPTIMIZING: Iterative Closest Point algorithm active...' });
+
+    setTimeout(() => {
+      // Small simulated corrections for each slave node
+      activeSession.forEach(id => {
+        if (id === pivotNodeId) return;
+        const node = nodes.find(n => n.id === id);
+        const visual = node?.facets.find(f => f.type === 'Visual');
+        if (!visual) return;
+
+        updateNodeFacet(id, 'Visual', {
+          position: visual.data.position.map((v: number) => v + (Math.random() - 0.5) * 0.05),
+          rotation: visual.data.rotation.map((v: number) => v + (Math.random() - 0.5) * 0.2)
+        });
+      });
+      setIsAligning(false);
+      addLog({ source: '3DGS', level: 'OK', message: 'ALIGNMENT_LOCKED: Residual error < 0.002m' });
+    }, 2000);
   };
 
   return (
@@ -149,7 +197,8 @@ export const WorldStitcher = () => {
                                 <span className="text-[7px] text-ame-muted mb-0.5">{axis}</span>
                                 <input 
                                   type="text" 
-                                  defaultValue={visual.data.position[i].toFixed(3)}
+                                  value={visual.data.position[i].toFixed(3)}
+                                  onChange={(e) => handleSpatialChange(nodeId, axis as any, e.target.value)}
                                   className="bg-transparent text-[9px] font-mono outline-none text-ame-text"
                                 />
                               </div>
@@ -169,7 +218,8 @@ export const WorldStitcher = () => {
                                 <span className="text-[7px] text-ame-muted mb-0.5">{axis}</span>
                                 <input 
                                   type="text" 
-                                  defaultValue={visual.data.rotation[i].toFixed(1)}
+                                  value={visual.data.rotation[i].toFixed(1)}
+                                  onChange={(e) => handleSpatialChange(nodeId, axis as any, e.target.value)}
                                   className="bg-transparent text-[9px] font-mono outline-none text-ame-accent"
                                 />
                               </div>
@@ -188,13 +238,20 @@ export const WorldStitcher = () => {
 
       {/* Integration Tools */}
       <div className="p-3 border-t border-ame-border bg-ame-panel-bg/20 space-y-2">
-        <button className="w-full py-2 bg-ame-accent text-ame-bg text-[10px] font-bold font-mono uppercase hover:bg-white transition-all flex items-center justify-center gap-2">
+        <button 
+          onClick={() => addLog({ source: 'SYSTEM', level: 'OK', message: 'SYNC_HANDSHAKE: All local transforms pushed to world origin.' })}
+          className="w-full py-2 bg-ame-accent text-ame-bg text-[10px] font-bold font-mono uppercase hover:bg-white transition-all flex items-center justify-center gap-2"
+        >
           <GitMerge className="w-3.5 h-3.5" />
           Synchronize Local IR
         </button>
-        <button className="w-full py-2 border border-ame-border text-ame-text text-[10px] font-bold font-mono uppercase hover:border-ame-accent hover:text-ame-accent transition-all flex items-center justify-center gap-2">
-          <Activity className="w-3.5 h-3.5" />
-          Auto-Align (Slam)
+        <button 
+          onClick={handleAutoAlign}
+          disabled={isAligning || activeSession.length < 2}
+          className={`w-full py-2 border border-ame-border text-[10px] font-bold font-mono uppercase transition-all flex items-center justify-center gap-2 ${isAligning ? 'bg-ame-accent/20 text-ame-accent border-ame-accent' : 'text-ame-text hover:border-ame-accent hover:text-ame-accent disabled:opacity-30'}`}
+        >
+          <Activity className={`w-3.5 h-3.5 ${isAligning ? 'animate-spin' : ''}`} />
+          {isAligning ? 'Optimization...' : 'Auto-Align (Slam)'}
         </button>
       </div>
     </div>
